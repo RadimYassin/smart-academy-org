@@ -10,7 +10,7 @@ Il répond aux défis de la fragmentation des données entre les plateformes d'a
 
 Les principaux objectifs de cette plateforme sont de:
 
-* **Centraliser** les données pédagogiques issues des LMS[cite: 24].
+* **Centraliser** les données pédagogiques issues des LMS.
 * Fournir des **prédictions de risque d'échec** et des **recommandations personnalisées**.
 * Offrir une **interface claire** pour les enseignants et un **coach mobile** pour les étudiants.
 * Concevoir une **architecture évolutive et maintenable**.
@@ -19,7 +19,7 @@ Les principaux objectifs de cette plateforme sont de:
 
 ## 🏗 Architecture Technique
 
-L'architecture est organisée en couches (Frontend, Mobile, Gateway, Microservices, Data) et utilise une approche microservices pour garantir l'évolutivité[cite: 49].
+L'architecture est organisée en couches (Frontend, Mobile, Gateway, Microservices, Data) et utilise une approche microservices pour garantir l'évolutivité.
 
 ### Vue d'ensemble (Couches Logiques)
 
@@ -35,8 +35,8 @@ L'architecture est organisée en couches (Frontend, Mobile, Gateway, Microservic
 
 | Module | Responsabilités Clés |
 | :--- | :--- |
-| **Auth Service** | Gestion des comptes, JWT, rafraîchissement de token, RBAC[cite: 78]. |
-| **LMS Connector** | Synchronisation via OAuth2, normalisation des logs LMS[cite: 80]. |
+| **Auth Service** | Gestion des comptes, JWT, rafraîchissement de token, RBAC. |
+| **LMS Connector** | Synchronisation via OAuth2, normalisation des logs LMS. |
 | **Prepa-Data** | DAG Airflow pour ingestions, nettoyage, validation (Great Expectations). |
 | **Path Predictor** | Entraînement et déploiement des modèles (XGBoost), stockage des versions via MLflow. |
 
