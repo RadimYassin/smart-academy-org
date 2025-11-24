@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: user_management_db
+    environment:
+      POSTGRES_DB: user_management
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+# This was missing in your original file:
+volumes:
+  postgres_data:
+    #   app:
+    #     build: .
+    #     container_name: user_management_service
+    #     ports:
+    #       - "8081:8081"
+    #     environment:
+    #       DB_USERNAME: postgres
+    #       DB_PASSWORD: postgres
+    #       JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+    #     depends_on:
+    #       - postgres
+
+    # volumes:
+    #   postgres_data:
