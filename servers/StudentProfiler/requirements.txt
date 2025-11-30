@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+py-eureka-client
+scikit-learn
+pandas
+python-dotenv
