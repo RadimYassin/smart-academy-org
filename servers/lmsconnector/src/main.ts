@@ -3,7 +3,13 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(3000);
-  console.log('LMS Connector Service is running on port 3000');
+
+  // Enable graceful shutdown for Eureka deregistration
+  app.enableShutdownHooks();
+
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+  console.log(`LMS Connector Service is running on port ${port}`);
+  console.log(`Health check available at: http://localhost:${port}/health`);
 }
 bootstrap();
