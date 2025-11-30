@@ -1,0 +1,181 @@
+API Base URL: http://localhost:8081
+
+Authentication:
+Most POST, PUT, DELETE endpoints require a Bearer Token with role TEACHER or ADMIN.
+Header: Authorization: Bearer <your_jwt_token>
+
+--- COURSES ---
+
+1. List all courses
+   GET /courses
+
+2. Get course by ID
+   GET /courses/{courseId}
+
+3. Create a new course
+   POST /courses
+   Body (JSON):
+   {
+     "title": "Introduction to Java",
+     "description": "Learn the basics of Java programming.",
+     "category": "Programming",
+     "level": "BEGINNER",
+     "thumbnailUrl": "http://example.com/java.png"
+   }
+
+4. Update a course
+   PUT /courses/{courseId}
+   Body (JSON):
+   {
+     "title": "Advanced Java",
+     "description": "Master Java programming.",
+     "category": "Programming",
+     "level": "ADVANCED",
+     "thumbnailUrl": "http://example.com/java_adv.png"
+   }
+
+5. Delete a course
+   DELETE /courses/{courseId}
+
+--- MODULES ---
+
+6. List modules for a course
+   GET /courses/{courseId}/modules
+
+7. Create a new module
+   POST /courses/{courseId}/modules
+   Body (JSON):
+   {
+     "title": "Java Basics",
+     "description": "Variables, loops, and conditions",
+     "orderIndex": 1
+   }
+
+8. Update a module
+   PUT /courses/{courseId}/modules/{moduleId}
+   Body (JSON):
+   {
+     "title": "Java Basics Updated",
+     "description": "Updated description",
+     "orderIndex": 1
+   }
+
+9. Delete a module
+   DELETE /courses/{courseId}/modules/{moduleId}
+
+--- LESSONS ---
+
+10. List lessons for a module
+    GET /modules/{moduleId}/lessons
+
+11. Get lesson by ID
+    GET /lessons/{lessonId}
+
+12. Create a new lesson
+    POST /modules/{moduleId}/lessons
+    Body (JSON):
+    {
+      "title": "Variables",
+      "summary": "Understanding data types and variables",
+      "orderIndex": 1
+    }
+
+13. Update a lesson
+    PUT /modules/{moduleId}/lessons/{lessonId}
+    Body (JSON):
+    {
+      "title": "Variables and Data Types",
+      "summary": "Updated summary",
+      "orderIndex": 1
+    }
+
+14. Delete a lesson
+    DELETE /modules/{moduleId}/lessons/{lessonId}
+
+--- CONTENT ---
+
+15. List content for a lesson
+    GET /lessons/{lessonId}/content
+
+16. Add content to a lesson
+    POST /lessons/{lessonId}/content
+    Body (JSON):
+    {
+      "type": "TEXT",
+      "textContent": "Java is a strongly typed language...",
+      "orderIndex": 1
+    }
+    
+    OR (for Video)
+    {
+      "type": "VIDEO",
+      "videoUrl": "http://example.com/video.mp4",
+      "orderIndex": 2
+    }
+
+17. Update content
+    PUT /lessons/{lessonId}/content/{contentId}
+    Body (JSON):
+    {
+      "type": "TEXT",
+      "textContent": "Updated text content...",
+      "orderIndex": 1
+    }
+
+18. Delete content
+    DELETE /lessons/{lessonId}/content/{contentId}
+
+--- QUIZZES ---
+
+19. List quizzes for a course
+    GET /courses/{courseId}/quizzes
+
+20. Get quiz by ID
+    GET /courses/{courseId}/quizzes/{quizId}
+
+21. Create a new quiz
+    POST /courses/{courseId}/quizzes
+    Body (JSON):
+    {
+      "title": "Java Basics Quiz",
+      "description": "Test your knowledge of Java basics",
+      "difficulty": "EASY"
+    }
+
+22. Update a quiz
+    PUT /courses/{courseId}/quizzes/{quizId}
+    Body (JSON):
+    {
+      "title": "Java Basics Quiz Updated",
+      "description": "Updated description",
+      "difficulty": "MEDIUM"
+    }
+
+23. Delete a quiz
+    DELETE /courses/{courseId}/quizzes/{quizId}
+
+--- QUESTIONS ---
+
+24. List questions for a quiz
+    GET /quizzes/{quizId}/questions
+
+25. Add a question to a quiz
+    POST /quizzes/{quizId}/questions
+    Body (JSON):
+    {
+      "content": "What is the size of int in Java?",
+      "options": ["16 bit", "32 bit", "64 bit", "8 bit"],
+      "correctOptionIndex": 1
+    }
+
+26. Update a question
+    PUT /quizzes/{quizId}/questions/{questionId}
+    Body (JSON):
+    {
+      "content": "What is the size of long in Java?",
+      "options": ["16 bit", "32 bit", "64 bit", "8 bit"],
+      "correctOptionIndex": 2
+    }
+
+27. Delete a question
+    DELETE /quizzes/{quizId}/questions/{questionId}

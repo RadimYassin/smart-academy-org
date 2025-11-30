@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: course_db
+    environment:
+      POSTGRES_DB: course_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+# This was missing in your original file:
+volumes:
+  postgres_data:
