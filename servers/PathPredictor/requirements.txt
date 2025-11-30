@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+py-eureka-client
+xgboost
+mlflow
+pandas
+python-dotenv
