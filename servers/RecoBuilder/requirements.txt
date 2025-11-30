@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+py-eureka-client
+torch
+transformers
+faiss-cpu
+pandas
+python-dotenv
