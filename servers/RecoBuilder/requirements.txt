@@ -1,8 +1,13 @@
-fastapi
-uvicorn
-py-eureka-client
-torch
-transformers
-faiss-cpu
-pandas
-python-dotenv
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+py-eureka-client>=0.11.0
+torch>=2.0.0
+transformers>=4.35.0
+faiss-cpu>=1.7.4
+pandas>=2.1.0
+python-dotenv>=1.0.0
+
+# JWT Authentication
+PyJWT>=2.8.0
+python-jose[cryptography]>=3.3.0
+python-multipart>=0.0.6

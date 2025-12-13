@@ -16,86 +16,106 @@ import radim.ma.repositories.UserRepository;
 import radim.ma.security.JwtUtil;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import org.springframework.security.core.GrantedAuthority;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
-    private final AuthenticationManager authenticationManager;
-    private final RefreshTokenRepository refreshTokenRepository;
+        private final UserRepository userRepository;
+        private final PasswordEncoder passwordEncoder;
+        private final JwtUtil jwtUtil;
+        private final AuthenticationManager authenticationManager;
+        private final RefreshTokenRepository refreshTokenRepository;
 
-    public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+        public AuthResponse register(RegisterRequest request) {
+                if (userRepository.existsByEmail(request.getEmail())) {
+                        throw new RuntimeException("Email already exists");
+                }
+
+                var user = User.builder()
+                                .firstName(request.getFirstName())
+                                .lastName(request.getLastName())
+                                .email(request.getEmail())
+                                .password(passwordEncoder.encode(request.getPassword()))
+                                .role(request.getRole() != null ? request.getRole() : Role.STUDENT)
+                                .build();
+
+                var savedUser = userRepository.save(user);
+                Map<String, Object> extraClaims = new HashMap<>();
+                extraClaims.put("userId", savedUser.getId());
+                extraClaims.put("roles", savedUser.getAuthorities().stream()
+                                .map(GrantedAuthority::getAuthority)
+                                .collect(Collectors.toList()));
+                var jwtToken = jwtUtil.generateToken(extraClaims, savedUser);
+                var refreshToken = createRefreshToken(savedUser);
+
+                return AuthResponse.builder()
+                                .accessToken(jwtToken)
+                                .refreshToken(refreshToken.getToken())
+                                .build();
         }
 
-        var user = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole() != null ? request.getRole() : Role.STUDENT)
-                .build();
+        public AuthResponse authenticate(AuthRequest request) {
+                authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(
+                                                request.getEmail(),
+                                                request.getPassword()));
+                var user = userRepository.findByEmail(request.getEmail())
+                                .orElseThrow();
+                Map<String, Object> extraClaims = new HashMap<>();
+                extraClaims.put("userId", user.getId());
+                extraClaims.put("roles", user.getAuthorities().stream()
+                                .map(GrantedAuthority::getAuthority)
+                                .collect(Collectors.toList()));
+                var jwtToken = jwtUtil.generateToken(extraClaims, user);
+                var refreshToken = createRefreshToken(user);
 
-        var savedUser = userRepository.save(user);
-        var jwtToken = jwtUtil.generateToken(savedUser);
-        var refreshToken = createRefreshToken(savedUser);
+                return AuthResponse.builder()
+                                .accessToken(jwtToken)
+                                .refreshToken(refreshToken.getToken())
+                                .build();
+        }
 
-        return AuthResponse.builder()
-                .accessToken(jwtToken)
-                .refreshToken(refreshToken.getToken())
-                .build();
-    }
+        public AuthResponse refreshToken(String requestRefreshToken) {
+                return refreshTokenRepository.findByToken(requestRefreshToken)
+                                .map(token -> {
+                                        if (token.getExpiryDate().isBefore(Instant.now())) {
+                                                refreshTokenRepository.delete(token);
+                                                throw new RuntimeException(
+                                                                "Refresh token was expired. Please make a new signin request");
+                                        }
+                                        return token;
+                                })
+                                .map(RefreshToken::getUser)
+                                .map(user -> {
+                                        Map<String, Object> extraClaims = new HashMap<>();
+                                        extraClaims.put("userId", user.getId());
+                                        extraClaims.put("roles", user.getAuthorities().stream()
+                                                        .map(GrantedAuthority::getAuthority)
+                                                        .collect(Collectors.toList()));
+                                        String accessToken = jwtUtil.generateToken(extraClaims, user);
+                                        return AuthResponse.builder()
+                                                        .accessToken(accessToken)
+                                                        .refreshToken(requestRefreshToken)
+                                                        .build();
+                                }).orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
+        }
 
-    public AuthResponse authenticate(AuthRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()));
-        var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow();
-        var jwtToken = jwtUtil.generateToken(user);
-        var refreshToken = createRefreshToken(user);
+        private RefreshToken createRefreshToken(User user) {
+                // Delete existing token if any
+                // refreshTokenRepository.deleteByUser(user); // Need Transactional if doing
+                // this
 
-        return AuthResponse.builder()
-                .accessToken(jwtToken)
-                .refreshToken(refreshToken.getToken())
-                .build();
-    }
-
-    public AuthResponse refreshToken(String requestRefreshToken) {
-        return refreshTokenRepository.findByToken(requestRefreshToken)
-                .map(token -> {
-                    if (token.getExpiryDate().isBefore(Instant.now())) {
-                        refreshTokenRepository.delete(token);
-                        throw new RuntimeException("Refresh token was expired. Please make a new signin request");
-                    }
-                    return token;
-                })
-                .map(RefreshToken::getUser)
-                .map(user -> {
-                    String accessToken = jwtUtil.generateToken(user);
-                    return AuthResponse.builder()
-                            .accessToken(accessToken)
-                            .refreshToken(requestRefreshToken)
-                            .build();
-                }).orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
-    }
-
-    private RefreshToken createRefreshToken(User user) {
-        // Delete existing token if any
-        // refreshTokenRepository.deleteByUser(user); // Need Transactional if doing
-        // this
-
-        RefreshToken refreshToken = RefreshToken.builder()
-                .user(user)
-                .token(UUID.randomUUID().toString())
-                .expiryDate(Instant.now().plusMillis(604800000)) // 7 days
-                .build();
-        return refreshTokenRepository.save(refreshToken);
-    }
+                RefreshToken refreshToken = RefreshToken.builder()
+                                .user(user)
+                                .token(UUID.randomUUID().toString())
+                                .expiryDate(Instant.now().plusMillis(604800000)) // 7 days
+                                .build();
+                return refreshTokenRepository.save(refreshToken);
+        }
 }

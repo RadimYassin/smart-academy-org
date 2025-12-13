@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 import uvicorn
 import py_eureka_client.eureka_client as eureka_client
 from contextlib import asynccontextmanager
 import pandas as pd
+from auth.jwt_utils import verify_token, get_current_user_id
 # import torch # Placeholder
 # from transformers import BertModel, BertTokenizer # Placeholder
 # import faiss # Placeholder
@@ -27,10 +28,17 @@ app = FastAPI(title="RecoBuilder Service", lifespan=lifespan)
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to RecoBuilder Service"}
+    """Health check endpoint - publicly accessible"""
+    return {"message": "Welcome to RecoBuilder Service", "status": "UP"}
 
 @app.get("/recommend/{student_id}")
-def recommend_resources(student_id: str):
+def recommend_resources(student_id: str, token_payload: dict = Depends(verify_token)):
+    """
+    Generate personalized learning recommendations - Protected endpoint
+    Uses BERT/Faiss for content similarity matching
+    """
+    requesting_user = token_payload.get("sub")
+    
     # Placeholder logic
     # 1. Fetch student profile from StudentProfiler
     # 2. Fetch student gaps from PrepaData
@@ -40,7 +48,8 @@ def recommend_resources(student_id: str):
         "recommendations": [
             {"type": "video", "title": "Statistics 101", "url": "http://..."},
             {"type": "exercise", "title": "Probability Quiz", "url": "http://..."}
-        ]
+        ],
+        "generated_by": requesting_user
     }
 
 if __name__ == "__main__":
