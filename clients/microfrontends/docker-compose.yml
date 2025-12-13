@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  shell:
+    build:
+      context: ./shell
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./shell:/app
+      - /app/node_modules
+    environment:
+      - VITE_HOST=0.0.0.0
+    networks:
+      - microfrontend-network
+    depends_on:
+      - auth
+      - dashboard
+      - courses
+
+  auth:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./auth:/app
+      - /app/node_modules
+    environment:
+      - VITE_HOST=0.0.0.0
+    networks:
+      - microfrontend-network
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "5003:5003"
+    volumes:
+      - ./dashboard:/app
+      - /app/node_modules
+    environment:
+      - VITE_HOST=0.0.0.0
+    networks:
+      - microfrontend-network
+
+  courses:
+    build:
+      context: ./courses
+      dockerfile: Dockerfile
+    ports:
+      - "5004:5004"
+    volumes:
+      - ./courses:/app
+      - /app/node_modules
+    environment:
+      - VITE_HOST=0.0.0.0
+    networks:
+      - microfrontend-network
+
+networks:
+  microfrontend-network:
+    driver: bridge
