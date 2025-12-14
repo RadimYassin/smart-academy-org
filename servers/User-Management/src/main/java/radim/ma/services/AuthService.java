@@ -14,6 +14,7 @@ import radim.ma.entities.User;
 import radim.ma.repositories.RefreshTokenRepository;
 import radim.ma.repositories.UserRepository;
 import radim.ma.security.JwtUtil;
+import radim.ma.service.EmailService;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -31,6 +32,8 @@ public class AuthService {
         private final JwtUtil jwtUtil;
         private final AuthenticationManager authenticationManager;
         private final RefreshTokenRepository refreshTokenRepository;
+        private final EmailService emailService;
+        private final radim.ma.service.OTPService otpService;
 
         public AuthResponse register(RegisterRequest request) {
                 if (userRepository.existsByEmail(request.getEmail())) {
@@ -43,9 +46,22 @@ public class AuthService {
                                 .email(request.getEmail())
                                 .password(passwordEncoder.encode(request.getPassword()))
                                 .role(request.getRole() != null ? request.getRole() : Role.STUDENT)
+                                .isVerified(false)
                                 .build();
 
+                // Generate OTP for email verification
+                String otpCode = otpService.generateOTP();
+                user.setVerificationCode(otpCode);
+                user.setVerificationCodeExpiry(otpService.generateExpiryTime());
+
                 var savedUser = userRepository.save(user);
+
+                // Send verification email with OTP
+                emailService.sendVerificationEmail(
+                                savedUser.getEmail(),
+                                savedUser.getFirstName(),
+                                otpCode);
+
                 Map<String, Object> extraClaims = new HashMap<>();
                 extraClaims.put("userId", savedUser.getId());
                 extraClaims.put("roles", savedUser.getAuthorities().stream()
@@ -57,6 +73,7 @@ public class AuthService {
                 return AuthResponse.builder()
                                 .accessToken(jwtToken)
                                 .refreshToken(refreshToken.getToken())
+                                .isVerified(false)
                                 .build();
         }
 
@@ -67,6 +84,21 @@ public class AuthService {
                                                 request.getPassword()));
                 var user = userRepository.findByEmail(request.getEmail())
                                 .orElseThrow();
+
+                // Check if email is verified
+                if (!user.getIsVerified()) {
+                        throw new RuntimeException(
+                                        "Email not verified. Please check your email for verification code.");
+                }
+
+                // Send login notification email asynchronously
+                emailService.sendLoginNotificationEmail(
+                                user.getEmail(),
+                                user.getFirstName(),
+                                null, // IP address can be extracted from HttpServletRequest if needed
+                                null // User agent can be extracted from HttpServletRequest if needed
+                );
+
                 Map<String, Object> extraClaims = new HashMap<>();
                 extraClaims.put("userId", user.getId());
                 extraClaims.put("roles", user.getAuthorities().stream()
@@ -78,6 +110,7 @@ public class AuthService {
                 return AuthResponse.builder()
                                 .accessToken(jwtToken)
                                 .refreshToken(refreshToken.getToken())
+                                .isVerified(true)
                                 .build();
         }
 

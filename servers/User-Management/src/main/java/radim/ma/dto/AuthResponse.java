@@ -17,4 +17,7 @@ public class AuthResponse {
 
     @JsonProperty("refresh_token")
     private String refreshToken;
+
+    @JsonProperty("is_verified")
+    private Boolean isVerified;
 }

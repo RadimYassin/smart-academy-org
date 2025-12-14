@@ -45,6 +45,20 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Role role;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean isVerified = false;
+
+    @Column(length = 6)
+    private String verificationCode;
+
+    private LocalDateTime verificationCodeExpiry;
+
+    @Column(length = 6)
+    private String passwordResetCode;
+
+    private LocalDateTime passwordResetExpiry;
+
     private boolean deleted = false;
 
     private LocalDateTime createdAt;

@@ -20,6 +20,23 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+  # Email Configuration
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:radimyassin20@gmail.com}
+    password: ${MAIL_PASSWORD:bzqconpstpqzonse}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
 
 # Shared JWT Configuration - Must match across all microservices
 # Set JWT_SECRET environment variable for production deployment
@@ -30,6 +47,10 @@ application:
       expiration: ${JWT_EXPIRATION:86400000} # 1 day (24 hours)
       refresh-token:
         expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days
+  mail:
+    from: ${MAIL_FROM:noreply@smart-academy.com}
+    from-name: ${MAIL_FROM_NAME:Smart Academy}
+
 
 eureka:
   client:

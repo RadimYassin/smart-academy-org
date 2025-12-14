@@ -5,7 +5,7 @@ CREATE TABLE courses (
     category VARCHAR(255),
     level VARCHAR(50),
     thumbnail_url VARCHAR(255),
-    teacher_id UUID NOT NULL,
+    teacher_id BIGINT NOT NULL,
     created_at TIMESTAMP,
     updated_at TIMESTAMP
 );
