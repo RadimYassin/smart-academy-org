@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Phone, Eye, EyeOff, ArrowLeft, BookOpen } from 'lucide-react';
+import { Mail, Phone, Eye, EyeOff, GraduationCap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface LoginPageProps {
@@ -36,21 +36,21 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister, onFo
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (validate()) {
-            // Call local handler
-            onLogin(email, password);
+        if (!validate()) return;
 
-            // Notify parent Shell via postMessage (for iframe integration)
-            if (window.parent !== window) {
-                window.parent.postMessage(
-                    {
-                        type: 'AUTH_SUCCESS',
-                        email,
-                        password
-                    },
-                    '*' // Use wildcard for cross-origin iframe communication
-                );
-            }
+        // Call local handler
+        onLogin(email, password);
+
+        // Notify parent Shell via postMessage (Shell will handle API call)
+        if (window.parent !== window) {
+            window.parent.postMessage(
+                {
+                    type: 'AUTH_LOGIN',
+                    email,
+                    password
+                },
+                '*'
+            );
         }
     };
 
@@ -63,7 +63,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister, onFo
                 <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
 
                 <div className="relative z-10 flex flex-col items-center justify-center w-full text-white p-12">
-                    {/* Book Icon */}
+                    {/* Logo Icon */}
                     <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -71,7 +71,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister, onFo
                         className="mb-8"
                     >
                         <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                            <BookOpen size={48} strokeWidth={2} />
+                            <GraduationCap size={48} strokeWidth={2} />
                         </div>
                     </motion.div>
 
@@ -82,7 +82,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister, onFo
                         transition={{ delay: 0.2 }}
                         className="text-5xl font-bold mb-4 text-center"
                     >
-                        Master New Skills
+                        Smart Academy
                     </motion.h1>
 
                     {/* Subtitle */}
@@ -92,7 +92,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister, onFo
                         transition={{ delay: 0.3 }}
                         className="text-xl text-white/90 text-center max-w-md"
                     >
-                        Join thousands of learners advancing their careers with Overskill
+                        Your Learning Journey Starts Here
                     </motion.p>
                 </div>
             </div>
@@ -121,8 +121,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister, onFo
                         <button
                             onClick={() => setLoginMethod('email')}
                             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${loginMethod === 'email'
-                                    ? 'bg-[#5B4FE9] text-white shadow-md'
-                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                ? 'bg-[#5B4FE9] text-white shadow-md'
+                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                                 }`}
                         >
                             <Mail size={18} />
@@ -131,8 +131,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister, onFo
                         <button
                             onClick={() => setLoginMethod('phone')}
                             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${loginMethod === 'phone'
-                                    ? 'bg-[#5B4FE9] text-white shadow-md'
-                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                ? 'bg-[#5B4FE9] text-white shadow-md'
+                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                                 }`}
                         >
                             <Phone size={18} />
@@ -151,8 +151,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister, onFo
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className={`w-full px-4 py-3 rounded-lg border ${errors.email
-                                        ? 'border-red-500 focus:ring-red-500'
-                                        : 'border-gray-300 focus:ring-[#5B4FE9] focus:border-[#5B4FE9]'
+                                    ? 'border-red-500 focus:ring-red-500'
+                                    : 'border-gray-300 focus:ring-[#5B4FE9] focus:border-[#5B4FE9]'
                                     } bg-white focus:ring-2 outline-none transition-all text-gray-900`}
                                 placeholder={loginMethod === 'email' ? 'Enter your email' : 'Enter your phone'}
                             />
@@ -172,8 +172,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister, onFo
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     className={`w-full px-4 py-3 rounded-lg border ${errors.password
-                                            ? 'border-red-500 focus:ring-red-500'
-                                            : 'border-gray-300 focus:ring-[#5B4FE9] focus:border-[#5B4FE9]'
+                                        ? 'border-red-500 focus:ring-red-500'
+                                        : 'border-gray-300 focus:ring-[#5B4FE9] focus:border-[#5B4FE9]'
                                         } bg-white focus:ring-2 outline-none transition-all pr-11 text-gray-900`}
                                     placeholder="Enter your password"
                                 />
