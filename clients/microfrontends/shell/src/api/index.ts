@@ -18,5 +18,13 @@ export * from './types';
 // API Services
 export { authApi } from './authApi';
 export { userApi } from './userApi';
-export { courseApi, moduleApi, lessonApi, quizApi } from './courseApi';
+export { 
+    courseApi, 
+    moduleApi, 
+    lessonApi, 
+    lessonContentApi, 
+    quizApi, 
+    questionApi 
+} from './courseApi';
 export { analyticsApi, profilerApi, predictorApi, recommendationApi } from './analyticsApi';
+export { classApi } from './classApi';

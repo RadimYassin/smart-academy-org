@@ -3,6 +3,7 @@ import { Search, Grid3x3, List, SlidersHorizontal } from 'lucide-react';
 import { mockCourses, categories } from './data/mockCourses';
 import CourseCard from './components/CourseCard';
 import TeacherCoursesView from './components/TeacherCoursesView';
+import CourseDetailView from './components/CourseDetailView';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CoursesAppProps {
@@ -17,6 +18,8 @@ const CoursesApp: React.FC<CoursesAppProps> = ({ theme: initialTheme }) => {
     const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
     const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'price'>('popular');
     const [view, setView] = useState<'explore' | 'manage'>('explore');
+    const [selectedCourseForDetail, setSelectedCourseForDetail] = useState<any | null>(null);
+    const [showCourseDetail, setShowCourseDetail] = useState(false);
 
     // Listen for theme changes and role info from parent Shell
     useEffect(() => {
@@ -30,6 +33,12 @@ const CoursesApp: React.FC<CoursesAppProps> = ({ theme: initialTheme }) => {
             if (event.data.type === 'SET_VIEW') {
                 console.log('[CoursesApp] View change to:', event.data.view);
                 setView(event.data.view); // 'explore' for students, 'manage' for teachers
+            }
+            if (event.data.type === 'OPEN_COURSE_DETAIL') {
+                console.log('[CoursesApp] Opening course detail:', event.data.course);
+                // When opened in a new page route, display CourseDetailView
+                setSelectedCourseForDetail(event.data.course);
+                setShowCourseDetail(true);
             }
         };
 
@@ -62,6 +71,20 @@ const CoursesApp: React.FC<CoursesAppProps> = ({ theme: initialTheme }) => {
             if (sortBy === 'price') return a.price - b.price;
             return b.students - a.students; // popular
         });
+
+    // Course Detail View - Show when course detail is requested
+    if (showCourseDetail && selectedCourseForDetail) {
+        return (
+            <CourseDetailView
+                course={selectedCourseForDetail}
+                theme={theme}
+                onBack={() => {
+                    setSelectedCourseForDetail(null);
+                    setShowCourseDetail(false);
+                }}
+            />
+        );
+    }
 
     // Teacher view
     if (view === 'manage') {

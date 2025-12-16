@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import radim.ma.dto.UserDto;
+import radim.ma.entities.Role;
 import radim.ma.services.UserService;
 
 import java.util.List;
@@ -26,6 +27,13 @@ public class UserController {
     @Operation(summary = "Get all users (Admin only)")
     public ResponseEntity<List<UserDto>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @GetMapping("/students")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    @Operation(summary = "Get all students", description = "Admin and Teachers can get list of all students")
+    public ResponseEntity<List<UserDto>> getAllStudents() {
+        return ResponseEntity.ok(userService.getUsersByRole(Role.STUDENT));
     }
 
     @GetMapping("/{id}")

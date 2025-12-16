@@ -59,4 +59,11 @@ export const userApi = {
         // Adjust this endpoint based on your backend implementation
         return get<User>(`${ENDPOINTS.USERS.BASE}/me`);
     },
+
+    /**
+     * Get all students (Admin and Teachers only)
+     */
+    getAllStudents: async (): Promise<UserDto[]> => {
+        return get<UserDto[]>(ENDPOINTS.USERS.STUDENTS);
+    },
 };

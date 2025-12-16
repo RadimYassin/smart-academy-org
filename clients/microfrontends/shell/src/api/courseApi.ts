@@ -10,8 +10,15 @@ import type {
     Course,
     CreateCourseRequest,
     Module,
+    CreateModuleRequest,
     Lesson,
+    CreateLessonRequest,
+    LessonContent,
+    CreateLessonContentRequest,
     Quiz,
+    CreateQuizRequest,
+    Question,
+    CreateQuestionRequest,
     QuizAttempt,
 } from './types';
 
@@ -78,35 +85,29 @@ export const courseApi = {
 
 export const moduleApi = {
     /**
-     * Get all modules
+     * Get modules for a course
      */
-    getAllModules: async (): Promise<Module[]> => {
-        return get<Module[]>(ENDPOINTS.MODULES.BASE);
+    getModulesByCourse: async (courseId: string): Promise<Module[]> => {
+        return get<Module[]>(ENDPOINTS.MODULES.BASE(courseId));
     },
 
     /**
-     * Get module by ID
+     * Create new module for a course
      */
-    getModuleById: async (moduleId: string): Promise<Module> => {
-        return get<Module>(ENDPOINTS.MODULES.BY_ID(moduleId));
-    },
-
-    /**
-     * Create new module
-     */
-    createModule: async (moduleData: Partial<Module>): Promise<Module> => {
-        return post<Module, Partial<Module>>(ENDPOINTS.MODULES.BASE, moduleData);
+    createModule: async (courseId: string, moduleData: CreateModuleRequest): Promise<Module> => {
+        return post<Module, CreateModuleRequest>(ENDPOINTS.MODULES.BASE(courseId), moduleData);
     },
 
     /**
      * Update module
      */
     updateModule: async (
+        courseId: string,
         moduleId: string,
-        moduleData: Partial<Module>
+        moduleData: Partial<CreateModuleRequest>
     ): Promise<Module> => {
-        return put<Module, Partial<Module>>(
-            ENDPOINTS.MODULES.BY_ID(moduleId),
+        return put<Module, Partial<CreateModuleRequest>>(
+            ENDPOINTS.MODULES.BY_ID(courseId, moduleId),
             moduleData
         );
     },
@@ -114,8 +115,8 @@ export const moduleApi = {
     /**
      * Delete module
      */
-    deleteModule: async (moduleId: string): Promise<void> => {
-        return del<void>(ENDPOINTS.MODULES.BY_ID(moduleId));
+    deleteModule: async (courseId: string, moduleId: string): Promise<void> => {
+        return del<void>(ENDPOINTS.MODULES.BY_ID(courseId, moduleId));
     },
 };
 
@@ -125,35 +126,36 @@ export const moduleApi = {
 
 export const lessonApi = {
     /**
-     * Get all lessons
+     * Get lessons for a module
      */
-    getAllLessons: async (): Promise<Lesson[]> => {
-        return get<Lesson[]>(ENDPOINTS.LESSONS.BASE);
+    getLessonsByModule: async (moduleId: string): Promise<Lesson[]> => {
+        return get<Lesson[]>(ENDPOINTS.LESSONS.BASE(moduleId));
     },
 
     /**
      * Get lesson by ID
      */
     getLessonById: async (lessonId: string): Promise<Lesson> => {
-        return get<Lesson>(ENDPOINTS.LESSONS.BY_ID(lessonId));
+        return get<Lesson>(ENDPOINTS.LESSONS.BY_ID_ONLY(lessonId));
     },
 
     /**
-     * Create new lesson
+     * Create new lesson for a module
      */
-    createLesson: async (lessonData: Partial<Lesson>): Promise<Lesson> => {
-        return post<Lesson, Partial<Lesson>>(ENDPOINTS.LESSONS.BASE, lessonData);
+    createLesson: async (moduleId: string, lessonData: CreateLessonRequest): Promise<Lesson> => {
+        return post<Lesson, CreateLessonRequest>(ENDPOINTS.LESSONS.BASE(moduleId), lessonData);
     },
 
     /**
      * Update lesson
      */
     updateLesson: async (
+        moduleId: string,
         lessonId: string,
-        lessonData: Partial<Lesson>
+        lessonData: Partial<CreateLessonRequest>
     ): Promise<Lesson> => {
-        return put<Lesson, Partial<Lesson>>(
-            ENDPOINTS.LESSONS.BY_ID(lessonId),
+        return put<Lesson, Partial<CreateLessonRequest>>(
+            ENDPOINTS.LESSONS.BY_ID(moduleId, lessonId),
             lessonData
         );
     },
@@ -161,8 +163,49 @@ export const lessonApi = {
     /**
      * Delete lesson
      */
-    deleteLesson: async (lessonId: string): Promise<void> => {
-        return del<void>(ENDPOINTS.LESSONS.BY_ID(lessonId));
+    deleteLesson: async (moduleId: string, lessonId: string): Promise<void> => {
+        return del<void>(ENDPOINTS.LESSONS.BY_ID(moduleId, lessonId));
+    },
+};
+
+// ============================================================================
+// Lesson Content API
+// ============================================================================
+
+export const lessonContentApi = {
+    /**
+     * Get content for a lesson
+     */
+    getContentByLesson: async (lessonId: string): Promise<LessonContent[]> => {
+        return get<LessonContent[]>(ENDPOINTS.LESSON_CONTENT.BASE(lessonId));
+    },
+
+    /**
+     * Create new lesson content
+     */
+    createContent: async (lessonId: string, contentData: CreateLessonContentRequest): Promise<LessonContent> => {
+        return post<LessonContent, CreateLessonContentRequest>(ENDPOINTS.LESSON_CONTENT.BASE(lessonId), contentData);
+    },
+
+    /**
+     * Update lesson content
+     */
+    updateContent: async (
+        lessonId: string,
+        contentId: string,
+        contentData: Partial<CreateLessonContentRequest>
+    ): Promise<LessonContent> => {
+        return put<LessonContent, Partial<CreateLessonContentRequest>>(
+            ENDPOINTS.LESSON_CONTENT.BY_ID(lessonId, contentId),
+            contentData
+        );
+    },
+
+    /**
+     * Delete lesson content
+     */
+    deleteContent: async (lessonId: string, contentId: string): Promise<void> => {
+        return del<void>(ENDPOINTS.LESSON_CONTENT.BY_ID(lessonId, contentId));
     },
 };
 
@@ -172,24 +215,45 @@ export const lessonApi = {
 
 export const quizApi = {
     /**
-     * Get all quizzes
+     * Get quizzes for a course
      */
-    getAllQuizzes: async (): Promise<Quiz[]> => {
-        return get<Quiz[]>(ENDPOINTS.QUIZZES.BASE);
+    getQuizzesByCourse: async (courseId: string): Promise<Quiz[]> => {
+        return get<Quiz[]>(ENDPOINTS.QUIZZES.BASE(courseId));
     },
 
     /**
      * Get quiz by ID
      */
-    getQuizById: async (quizId: string): Promise<Quiz> => {
-        return get<Quiz>(ENDPOINTS.QUIZZES.BY_ID(quizId));
+    getQuizById: async (courseId: string, quizId: string): Promise<Quiz> => {
+        return get<Quiz>(ENDPOINTS.QUIZZES.BY_ID(courseId, quizId));
     },
 
     /**
-     * Create new quiz
+     * Create new quiz for a course
      */
-    createQuiz: async (quizData: Partial<Quiz>): Promise<Quiz> => {
-        return post<Quiz, Partial<Quiz>>(ENDPOINTS.QUIZZES.BASE, quizData);
+    createQuiz: async (courseId: string, quizData: CreateQuizRequest): Promise<Quiz> => {
+        return post<Quiz, CreateQuizRequest>(ENDPOINTS.QUIZZES.BASE(courseId), quizData);
+    },
+
+    /**
+     * Update quiz
+     */
+    updateQuiz: async (
+        courseId: string,
+        quizId: string,
+        quizData: Partial<CreateQuizRequest>
+    ): Promise<Quiz> => {
+        return put<Quiz, Partial<CreateQuizRequest>>(
+            ENDPOINTS.QUIZZES.BY_ID(courseId, quizId),
+            quizData
+        );
+    },
+
+    /**
+     * Delete quiz
+     */
+    deleteQuiz: async (courseId: string, quizId: string): Promise<void> => {
+        return del<void>(ENDPOINTS.QUIZZES.BY_ID(courseId, quizId));
     },
 
     /**
@@ -207,5 +271,46 @@ export const quizApi = {
      */
     getQuizAttemptById: async (attemptId: string): Promise<QuizAttempt> => {
         return get<QuizAttempt>(ENDPOINTS.QUIZ_ATTEMPTS.BY_ID(attemptId));
+    },
+};
+
+// ============================================================================
+// Question API
+// ============================================================================
+
+export const questionApi = {
+    /**
+     * Get questions for a quiz
+     */
+    getQuestionsByQuiz: async (quizId: string): Promise<Question[]> => {
+        return get<Question[]>(ENDPOINTS.QUESTIONS.BASE(quizId));
+    },
+
+    /**
+     * Create new question for a quiz
+     */
+    createQuestion: async (quizId: string, questionData: CreateQuestionRequest): Promise<Question> => {
+        return post<Question, CreateQuestionRequest>(ENDPOINTS.QUESTIONS.BASE(quizId), questionData);
+    },
+
+    /**
+     * Update question
+     */
+    updateQuestion: async (
+        quizId: string,
+        questionId: string,
+        questionData: Partial<CreateQuestionRequest>
+    ): Promise<Question> => {
+        return put<Question, Partial<CreateQuestionRequest>>(
+            ENDPOINTS.QUESTIONS.BY_ID(quizId, questionId),
+            questionData
+        );
+    },
+
+    /**
+     * Delete question
+     */
+    deleteQuestion: async (quizId: string, questionId: string): Promise<void> => {
+        return del<void>(ENDPOINTS.QUESTIONS.BY_ID(quizId, questionId));
     },
 };

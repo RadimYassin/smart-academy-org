@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import radim.ma.dto.UserDto;
+import radim.ma.entities.Role;
 import radim.ma.entities.User;
 import radim.ma.repositories.UserRepository;
 
@@ -18,6 +19,12 @@ public class UserService {
 
     public List<UserDto> getAllUsers() {
         return userRepository.findAll().stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<UserDto> getUsersByRole(Role role) {
+        return userRepository.findByRole(role).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }

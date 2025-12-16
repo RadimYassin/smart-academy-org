@@ -6,6 +6,8 @@ import MainLayout from './components/Layout/MainLayout';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import Courses from './pages/Courses';
+import CourseDetail from './pages/CourseDetail';
+import Students from './pages/Students';
 
 function App() {
   return (
@@ -31,7 +33,8 @@ function App() {
               {/* Teacher Routes */}
               <Route path="teacher/dashboard" element={<Dashboard />} />
               <Route path="teacher/courses" element={<Courses />} />
-              <Route path="teacher/students" element={<div className="p-8"><h1 className="text-2xl font-bold text-gray-400">Students - Coming Soon</h1></div>} />
+              <Route path="teacher/courses/:courseId" element={<CourseDetail />} />
+              <Route path="teacher/students" element={<Students />} />
               <Route path="teacher/analytics" element={<div className="p-8"><h1 className="text-2xl font-bold text-gray-400">Analytics - Coming Soon</h1></div>} />
               <Route path="teacher/settings" element={<div className="p-8"><h1 className="text-2xl font-bold text-gray-400">Settings - Coming Soon</h1></div>} />
 

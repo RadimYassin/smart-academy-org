@@ -40,6 +40,7 @@ export const ENDPOINTS = {
         BASE: `${SERVICES.USER_SERVICE}/api/v1/users`,
         BY_ID: (id: number) => `${SERVICES.USER_SERVICE}/api/v1/users/${id}`,
         RESTORE: (id: number) => `${SERVICES.USER_SERVICE}/api/v1/users/${id}/restore`,
+        STUDENTS: `${SERVICES.USER_SERVICE}/api/v1/users/students`,
     },
 
     // Course Management Endpoints
@@ -50,26 +51,47 @@ export const ENDPOINTS = {
 
     // Module Endpoints
     MODULES: {
-        BASE: `${SERVICES.COURSE_SERVICE}/modules`,
-        BY_ID: (id: string) => `${SERVICES.COURSE_SERVICE}/modules/${id}`,
+        BASE: (courseId: string) => `${SERVICES.COURSE_SERVICE}/courses/${courseId}/modules`,
+        BY_ID: (courseId: string, moduleId: string) => `${SERVICES.COURSE_SERVICE}/courses/${courseId}/modules/${moduleId}`,
     },
 
     // Lesson Endpoints
     LESSONS: {
-        BASE: `${SERVICES.COURSE_SERVICE}/lessons`,
-        BY_ID: (id: string) => `${SERVICES.COURSE_SERVICE}/lessons/${id}`,
+        BASE: (moduleId: string) => `${SERVICES.COURSE_SERVICE}/modules/${moduleId}/lessons`,
+        BY_ID: (moduleId: string, lessonId: string) => `${SERVICES.COURSE_SERVICE}/modules/${moduleId}/lessons/${lessonId}`,
+        BY_ID_ONLY: (lessonId: string) => `${SERVICES.COURSE_SERVICE}/lessons/${lessonId}`,
+    },
+
+    // Lesson Content Endpoints
+    LESSON_CONTENT: {
+        BASE: (lessonId: string) => `${SERVICES.COURSE_SERVICE}/lessons/${lessonId}/content`,
+        BY_ID: (lessonId: string, contentId: string) => `${SERVICES.COURSE_SERVICE}/lessons/${lessonId}/content/${contentId}`,
     },
 
     // Quiz Endpoints
     QUIZZES: {
-        BASE: `${SERVICES.COURSE_SERVICE}/quizzes`,
-        BY_ID: (id: string) => `${SERVICES.COURSE_SERVICE}/quizzes/${id}`,
+        BASE: (courseId: string) => `${SERVICES.COURSE_SERVICE}/courses/${courseId}/quizzes`,
+        BY_ID: (courseId: string, quizId: string) => `${SERVICES.COURSE_SERVICE}/courses/${courseId}/quizzes/${quizId}`,
+    },
+
+    // Question Endpoints
+    QUESTIONS: {
+        BASE: (quizId: string) => `${SERVICES.COURSE_SERVICE}/quizzes/${quizId}/questions`,
+        BY_ID: (quizId: string, questionId: string) => `${SERVICES.COURSE_SERVICE}/quizzes/${quizId}/questions/${questionId}`,
     },
 
     // Quiz Attempts
     QUIZ_ATTEMPTS: {
         BASE: `${SERVICES.COURSE_SERVICE}/quiz-attempts`,
         BY_ID: (id: string) => `${SERVICES.COURSE_SERVICE}/quiz-attempts/${id}`,
+    },
+
+    // Student Classes Endpoints
+    CLASSES: {
+        BASE: `${SERVICES.COURSE_SERVICE}/api/classes`,
+        BY_ID: (classId: string) => `${SERVICES.COURSE_SERVICE}/api/classes/${classId}`,
+        STUDENTS: (classId: string) => `${SERVICES.COURSE_SERVICE}/api/classes/${classId}/students`,
+        STUDENT_BY_ID: (classId: string, studentId: number) => `${SERVICES.COURSE_SERVICE}/api/classes/${classId}/students/${studentId}`,
     },
 
     // LMS Connector Endpoints

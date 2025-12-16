@@ -90,15 +90,42 @@ const apiClient: AxiosInstance = axios.create({
 });
 
 // ============================================================================
-// Request Interceptor - Attach JWT Token
+// Public Endpoints - Don't require JWT token
+// ============================================================================
+
+const PUBLIC_ENDPOINTS = [
+    '/api/v1/auth/login',
+    '/api/v1/auth/register',
+    '/api/v1/auth/forgot-password',
+    '/api/v1/auth/reset-password',
+    '/api/v1/auth/verify-email',
+    '/api/v1/auth/resend-otp',
+    '/api/v1/auth/refresh-token', // Refresh token endpoint doesn't use Bearer token
+];
+
+const isPublicEndpoint = (url: string | undefined): boolean => {
+    if (!url) return false;
+    return PUBLIC_ENDPOINTS.some(endpoint => url.includes(endpoint));
+};
+
+// ============================================================================
+// Request Interceptor - Attach JWT Token (only for protected endpoints)
 // ============================================================================
 
 apiClient.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-        const token = tokenManager.getAccessToken();
+        // Only add token for protected endpoints
+        if (!isPublicEndpoint(config.url)) {
+            const token = tokenManager.getAccessToken();
 
-        if (token && config.headers) {
-            config.headers.Authorization = `Bearer ${token}`;
+            if (token && config.headers) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+        } else {
+            // For public endpoints, explicitly remove Authorization header if present
+            if (config.headers) {
+                delete config.headers.Authorization;
+            }
         }
 
         // Log request in development
@@ -106,6 +133,7 @@ apiClient.interceptors.request.use(
             console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
                 data: config.data,
                 params: config.params,
+                isPublic: isPublicEndpoint(config.url),
             });
         }
 

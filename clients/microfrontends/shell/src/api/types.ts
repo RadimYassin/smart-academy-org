@@ -90,44 +90,103 @@ export interface Module {
     id: string;
     courseId: string;
     title: string;
+    description?: string;
     orderIndex: number;
     lessons?: Lesson[];
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface CreateModuleRequest {
+    title: string;
+    description?: string;
+    orderIndex: number;
 }
 
 export interface Lesson {
     id: string;
     moduleId: string;
     title: string;
-    type: string;
+    summary?: string;
     orderIndex: number;
-    lessonContents?: LessonContent[];
+    contents?: LessonContent[];
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface CreateLessonRequest {
+    title: string;
+    summary?: string;
+    orderIndex: number;
 }
 
 export interface LessonContent {
     id: string;
     lessonId: string;
-    contentType: string;
-    contentUrl: string;
-    duration?: number;
+    type: 'PDF' | 'TEXT' | 'VIDEO' | 'IMAGE' | 'QUIZ';
+    textContent?: string;
+    pdfUrl?: string;
+    videoUrl?: string;
+    imageUrl?: string;
+    quizId?: string;
+    orderIndex: number;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface CreateLessonContentRequest {
+    type: 'PDF' | 'TEXT' | 'VIDEO' | 'IMAGE' | 'QUIZ';
+    textContent?: string;
+    pdfUrl?: string;
+    videoUrl?: string;
+    imageUrl?: string;
+    quizId?: string;
+    orderIndex: number;
 }
 
 export interface Quiz {
     id: string;
-    lessonId: string;
+    courseId: string;
     title: string;
-    timeLimit?: number;
+    description?: string;
+    difficulty?: 'EASY' | 'MEDIUM' | 'HARD';
     passingScore?: number;
+    mandatory?: boolean;
     questions?: Question[];
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface CreateQuizRequest {
+    title: string;
+    description?: string;
+    difficulty?: 'EASY' | 'MEDIUM' | 'HARD';
+    passingScore?: number;
+    mandatory?: boolean;
 }
 
 export interface Question {
     id: string;
     quizId: string;
     questionText: string;
-    questionType: 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'SHORT_ANSWER';
-    options?: string[];
-    correctAnswer: string;
-    points: number;
+    questionType: string;
+    points?: number;
+    options?: QuestionOption[];
+}
+
+export interface QuestionOption {
+    id: string;
+    questionId: string;
+    optionText: string;
+    isCorrect: boolean;
+    optionOrder?: number;
+}
+
+export interface CreateQuestionRequest {
+    questionText: string;
+    questionType: string;
+    points?: number;
+    options?: Omit<QuestionOption, 'id' | 'questionId'>[];
 }
 
 export interface QuizAttempt {
@@ -214,4 +273,38 @@ export interface PaginatedResponse<T> {
     number: number;
     first: boolean;
     last: boolean;
+}
+
+// ============================================================================
+// Student Class Types
+// ============================================================================
+
+export interface StudentClass {
+    id: string;
+    name: string;
+    description?: string;
+    teacherId: number;
+    studentCount: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CreateClassRequest {
+    name: string;
+    description?: string;
+}
+
+export interface UpdateClassRequest {
+    name: string;
+    description?: string;
+}
+
+export interface AddStudentsRequest {
+    studentIds: number[];
+}
+
+export interface ClassStudent {
+    studentId: number;
+    addedBy: number;
+    addedAt: string;
 }
