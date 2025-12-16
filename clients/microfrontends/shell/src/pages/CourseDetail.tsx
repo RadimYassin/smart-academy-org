@@ -3,6 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import RemoteApp from '../components/RemoteApp';
 import { useAuth } from '../contexts/AuthContext';
 import { courseApi, moduleApi, lessonApi, lessonContentApi, quizApi, questionApi } from '../api/courseApi';
+import { enrollmentApi } from '../api/enrollmentApi';
+import { classApi } from '../api/classApi';
+import { userApi } from '../api/userApi';
 
 const CourseDetail: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
@@ -181,6 +184,158 @@ const CourseDetail: React.FC = () => {
                         iframe.contentWindow.postMessage({
                             type: 'COURSE_ERROR',
                             error: error.message || 'Failed to create question'
+                        }, '*');
+                    }
+                }
+
+                // Fetch enrollments
+                if (event.data.type === 'FETCH_ENROLLMENTS') {
+                    console.log('[Shell CourseDetail] Fetching enrollments for course:', event.data.courseId);
+                    try {
+                        const enrollments = await enrollmentApi.getCourseEnrollments(event.data.courseId);
+                        console.log('[Shell CourseDetail] Enrollments loaded:', enrollments);
+                        iframe.contentWindow.postMessage({
+                            type: 'ENROLLMENTS_LOADED',
+                            enrollments
+                        }, '*');
+                    } catch (error: any) {
+                        console.error('[Shell CourseDetail] Error fetching enrollments:', error);
+                        iframe.contentWindow.postMessage({
+                            type: 'COURSE_ERROR',
+                            error: error.message || 'Failed to load enrollments'
+                        }, '*');
+                    }
+                }
+
+                // Assign student to course
+                if (event.data.type === 'ASSIGN_STUDENT') {
+                    console.log('[Shell CourseDetail] Assigning student:', {
+                        courseId: event.data.courseId,
+                        studentId: event.data.studentId
+                    });
+                    try {
+                        // Ensure courseId is a string (UUID format) and studentId is a number
+                        const request = {
+                            courseId: String(event.data.courseId),
+                            studentId: Number(event.data.studentId)
+                        };
+                        console.log('[Shell CourseDetail] Sending request:', request);
+                        const enrollment = await enrollmentApi.assignStudent(request);
+                        console.log('[Shell CourseDetail] Student assigned:', enrollment);
+                        iframe.contentWindow.postMessage({
+                            type: 'STUDENT_ASSIGNED',
+                            enrollment
+                        }, '*');
+                    } catch (error: any) {
+                        console.error('[Shell CourseDetail] Error assigning student:', error);
+                        const errorMessage = error.response?.data?.error || 
+                                           error.response?.data?.message ||
+                                           (typeof error.response?.data === 'object' ? JSON.stringify(error.response?.data) : error.message) ||
+                                           'Failed to assign student';
+                        console.error('[Shell CourseDetail] Error details:', {
+                            status: error.response?.status,
+                            data: error.response?.data,
+                            message: errorMessage
+                        });
+                        iframe.contentWindow.postMessage({
+                            type: 'COURSE_ERROR',
+                            error: errorMessage
+                        }, '*');
+                    }
+                }
+
+                // Assign class to course
+                if (event.data.type === 'ASSIGN_CLASS') {
+                    console.log('[Shell CourseDetail] Assigning class:', {
+                        courseId: event.data.courseId,
+                        classId: event.data.classId,
+                        courseIdType: typeof event.data.courseId,
+                        classIdType: typeof event.data.classId
+                    });
+                    try {
+                        // Ensure both IDs are strings (UUID format)
+                        const request = {
+                            courseId: String(event.data.courseId),
+                            classId: String(event.data.classId)
+                        };
+                        console.log('[Shell CourseDetail] Sending request:', request);
+                        const enrollments = await enrollmentApi.assignClass(request);
+                        console.log('[Shell CourseDetail] Class assigned:', enrollments);
+                        iframe.contentWindow.postMessage({
+                            type: 'CLASS_ASSIGNED',
+                            enrollments
+                        }, '*');
+                    } catch (error: any) {
+                        console.error('[Shell CourseDetail] Error assigning class:', error);
+                        const errorMessage = error.response?.data?.error || 
+                                           error.response?.data?.message ||
+                                           (typeof error.response?.data === 'object' ? JSON.stringify(error.response?.data) : error.message) ||
+                                           'Failed to assign class';
+                        console.error('[Shell CourseDetail] Error details:', {
+                            status: error.response?.status,
+                            data: error.response?.data,
+                            message: errorMessage
+                        });
+                        iframe.contentWindow.postMessage({
+                            type: 'COURSE_ERROR',
+                            error: errorMessage
+                        }, '*');
+                    }
+                }
+
+                // Unenroll student from course
+                if (event.data.type === 'UNENROLL_STUDENT') {
+                    console.log('[Shell CourseDetail] Unenrolling student:', event.data.studentId);
+                    try {
+                        await enrollmentApi.unenrollStudent(event.data.courseId, event.data.studentId);
+                        console.log('[Shell CourseDetail] Student unenrolled');
+                        iframe.contentWindow.postMessage({
+                            type: 'STUDENT_UNENROLLED',
+                            studentId: event.data.studentId
+                        }, '*');
+                    } catch (error: any) {
+                        console.error('[Shell CourseDetail] Error unenrolling student:', error);
+                        iframe.contentWindow.postMessage({
+                            type: 'COURSE_ERROR',
+                            error: error.message || 'Failed to unenroll student'
+                        }, '*');
+                    }
+                }
+
+                // Fetch all students for assignment
+                if (event.data.type === 'FETCH_ALL_STUDENTS') {
+                    console.log('[Shell CourseDetail] Fetching all students');
+                    try {
+                        const students = await userApi.getAllStudents();
+                        console.log('[Shell CourseDetail] Students loaded:', students);
+                        iframe.contentWindow.postMessage({
+                            type: 'ALL_STUDENTS_LOADED',
+                            students
+                        }, '*');
+                    } catch (error: any) {
+                        console.error('[Shell CourseDetail] Error fetching students:', error);
+                        iframe.contentWindow.postMessage({
+                            type: 'COURSE_ERROR',
+                            error: error.message || 'Failed to load students'
+                        }, '*');
+                    }
+                }
+
+                // Fetch teacher classes for assignment
+                if (event.data.type === 'FETCH_TEACHER_CLASSES') {
+                    console.log('[Shell CourseDetail] Fetching teacher classes');
+                    try {
+                        const classes = await classApi.getMyClasses();
+                        console.log('[Shell CourseDetail] Classes loaded:', classes);
+                        iframe.contentWindow.postMessage({
+                            type: 'TEACHER_CLASSES_LOADED',
+                            classes
+                        }, '*');
+                    } catch (error: any) {
+                        console.error('[Shell CourseDetail] Error fetching classes:', error);
+                        iframe.contentWindow.postMessage({
+                            type: 'COURSE_ERROR',
+                            error: error.message || 'Failed to load classes'
                         }, '*');
                     }
                 }

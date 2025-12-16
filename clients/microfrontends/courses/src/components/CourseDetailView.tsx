@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
     ArrowLeft, Plus, Edit, Trash2, BookOpen, FileText, Video, Image as ImageIcon, 
-    FileQuestion, ChevronDown, ChevronRight, Play, Layers, HelpCircle, X
+    FileQuestion, ChevronDown, ChevronRight, Play, Layers, HelpCircle, X,
+    Users, GraduationCap, UserPlus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ModuleFormModal from './ModuleFormModal';
@@ -9,6 +10,7 @@ import LessonFormModal from './LessonFormModal';
 import ContentFormModal from './ContentFormModal';
 import QuizFormModal from './QuizFormModal';
 import QuestionFormModal from './QuestionFormModal';
+import AssignModal from './AssignModal';
 
 interface Course {
     id: string;
@@ -98,6 +100,11 @@ const CourseDetailView: React.FC<CourseDetailViewProps> = ({ course: initialCour
     const [selectedModule, setSelectedModule] = useState<Module | null>(null);
     const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
     const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
+    
+    // Enrollment states
+    const [enrollments, setEnrollments] = useState<any[]>([]);
+    const [showAssignModal, setShowAssignModal] = useState(false);
+    const [assignMode, setAssignMode] = useState<'student' | 'class' | null>(null);
 
     // Listen for OPEN_COURSE_DETAIL message from Shell
     useEffect(() => {
@@ -141,6 +148,12 @@ const CourseDetailView: React.FC<CourseDetailViewProps> = ({ course: initialCour
         // Request modules and quizzes from Shell
         window.parent.postMessage({
             type: 'FETCH_COURSE_CONTENT',
+            courseId: course.id
+        }, '*');
+
+        // Request enrollments from Shell
+        window.parent.postMessage({
+            type: 'FETCH_ENROLLMENTS',
             courseId: course.id
         }, '*');
     };
@@ -231,6 +244,27 @@ const CourseDetailView: React.FC<CourseDetailViewProps> = ({ course: initialCour
                 if (quizId) {
                     setExpandedQuizzes(prev => new Set(prev).add(quizId));
                 }
+            }
+
+            if (event.data.type === 'ENROLLMENTS_LOADED') {
+                setEnrollments(event.data.enrollments || []);
+            }
+
+            if (event.data.type === 'STUDENT_ASSIGNED' || event.data.type === 'CLASS_ASSIGNED') {
+                // Reload enrollments
+                window.parent.postMessage({
+                    type: 'FETCH_ENROLLMENTS',
+                    courseId: course.id
+                }, '*');
+                setShowAssignModal(false);
+            }
+
+            if (event.data.type === 'STUDENT_UNENROLLED') {
+                // Reload enrollments
+                window.parent.postMessage({
+                    type: 'FETCH_ENROLLMENTS',
+                    courseId: course.id
+                }, '*');
             }
         };
 
@@ -515,6 +549,107 @@ const CourseDetailView: React.FC<CourseDetailViewProps> = ({ course: initialCour
                         </div>
                     )}
                 </div>
+
+                {/* Course Enrollment Section */}
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <Users size={24} className="text-green-500" />
+                            Course Enrollment
+                        </h2>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => {
+                                    setAssignMode('class');
+                                    setShowAssignModal(true);
+                                }}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                            >
+                                <GraduationCap size={18} />
+                                Assign Class
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setAssignMode('student');
+                                    setShowAssignModal(true);
+                                }}
+                                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                            >
+                                <UserPlus size={18} />
+                                Assign Student
+                            </button>
+                        </div>
+                    </div>
+
+                    {enrollments.length === 0 ? (
+                        <div className="text-center py-12">
+                            <Users size={48} className="text-gray-400 mx-auto mb-4" />
+                            <p className="text-gray-600 dark:text-gray-400 mb-4">No students or classes assigned yet</p>
+                            <div className="flex gap-2 justify-center">
+                                <button
+                                    onClick={() => {
+                                        setAssignMode('class');
+                                        setShowAssignModal(true);
+                                    }}
+                                    className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                                >
+                                    Assign a Class
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setAssignMode('student');
+                                        setShowAssignModal(true);
+                                    }}
+                                    className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                                >
+                                    Assign a Student
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {enrollments.map((enrollment: any) => (
+                                <div
+                                    key={enrollment.id}
+                                    className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        {enrollment.assignmentType === 'CLASS' ? (
+                                            <GraduationCap size={20} className="text-blue-500" />
+                                        ) : (
+                                            <Users size={20} className="text-green-500" />
+                                        )}
+                                        <div>
+                                            <p className="font-medium text-gray-900 dark:text-white">
+                                                {enrollment.assignmentType === 'CLASS'
+                                                    ? enrollment.className || `Class ${enrollment.classId}`
+                                                    : `Student ID: ${enrollment.studentId}`}
+                                            </p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                Assigned on {new Date(enrollment.enrolledAt).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {enrollment.assignmentType === 'INDIVIDUAL' && (
+                                        <button
+                                            onClick={() => {
+                                                window.parent.postMessage({
+                                                    type: 'UNENROLL_STUDENT',
+                                                    courseId: course.id,
+                                                    studentId: enrollment.studentId
+                                                }, '*');
+                                            }}
+                                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                            title="Remove student"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Modals */}
@@ -596,6 +731,35 @@ const CourseDetailView: React.FC<CourseDetailViewProps> = ({ course: initialCour
                             quizId: selectedQuiz.id,
                             question: data,
                             quizIdForResponse: selectedQuiz.id
+                        }, '*');
+                    }
+                }}
+            />
+
+            <AssignModal
+                isOpen={showAssignModal && assignMode !== null}
+                onClose={() => {
+                    setShowAssignModal(false);
+                    setAssignMode(null);
+                }}
+                mode={assignMode || 'student'}
+                courseId={course.id}
+                onAssign={(studentIds, classId) => {
+                    if (studentIds && studentIds.length > 0) {
+                        // Assign multiple students one by one
+                        studentIds.forEach(studentId => {
+                            window.parent.postMessage({
+                                type: 'ASSIGN_STUDENT',
+                                courseId: course.id,
+                                studentId
+                            }, '*');
+                        });
+                    } else if (classId) {
+                        // Assign class
+                        window.parent.postMessage({
+                            type: 'ASSIGN_CLASS',
+                            courseId: course.id,
+                            classId
                         }, '*');
                     }
                 }}

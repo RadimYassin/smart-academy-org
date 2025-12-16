@@ -45,8 +45,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwtService.isTokenValid(jwt)) {
+                    // Ensure roles have ROLE_ prefix for Spring Security hasRole() checks
                     List<SimpleGrantedAuthority> authorities = roles.stream()
-                            .map(SimpleGrantedAuthority::new)
+                            .map(role -> {
+                                // If role already has ROLE_ prefix, use it as is, otherwise add it
+                                String roleName = role.startsWith("ROLE_") ? role : "ROLE_" + role;
+                                return new SimpleGrantedAuthority(roleName);
+                            })
                             .collect(Collectors.toList());
 
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(

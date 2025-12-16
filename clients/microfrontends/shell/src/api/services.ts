@@ -94,6 +94,16 @@ export const ENDPOINTS = {
         STUDENT_BY_ID: (classId: string, studentId: number) => `${SERVICES.COURSE_SERVICE}/api/classes/${classId}/students/${studentId}`,
     },
 
+    // Enrollment Endpoints
+    ENROLLMENTS: {
+        BASE: `${SERVICES.COURSE_SERVICE}/api/enrollments`,
+        STUDENT: `${SERVICES.COURSE_SERVICE}/api/enrollments/student`,
+        CLASS: `${SERVICES.COURSE_SERVICE}/api/enrollments/class`,
+        BY_COURSE: (courseId: string) => `${SERVICES.COURSE_SERVICE}/api/enrollments/courses/${courseId}`,
+        UNENROLL_STUDENT: (courseId: string, studentId: number) => `${SERVICES.COURSE_SERVICE}/api/enrollments/courses/${courseId}/students/${studentId}`,
+        MY_COURSES: `${SERVICES.COURSE_SERVICE}/api/enrollments/my-courses`,
+    },
+
     // LMS Connector Endpoints
     LMS: {
         SYNC_STUDENTS: (courseId: number) =>

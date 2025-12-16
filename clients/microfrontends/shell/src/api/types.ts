@@ -308,3 +308,31 @@ export interface ClassStudent {
     addedBy: number;
     addedAt: string;
 }
+
+// ============================================================================
+// Enrollment Types
+// ============================================================================
+
+export interface AssignStudentRequest {
+    courseId: string;
+    studentId: number;
+}
+
+export interface AssignClassRequest {
+    courseId: string;
+    classId: string;
+}
+
+export type AssignmentType = 'INDIVIDUAL' | 'CLASS';
+
+export interface Enrollment {
+    id: string;
+    courseId: string;
+    courseTitle?: string;
+    studentId: number;
+    classId?: string;
+    className?: string;
+    assignedBy: number;
+    assignmentType: AssignmentType;
+    enrolledAt: string;
+}

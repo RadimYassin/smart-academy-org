@@ -80,10 +80,215 @@ const Students: React.FC = () => {
             setShowCreateStudentModal(false);
             setNewStudent({ email: '', password: '', firstName: '', lastName: '' });
             alert('Student account created successfully!');
-            // Reload students list if available
+            // Reload students list
+            await loadAllAvailableStudents();
         } catch (err: any) {
             setError(err.message || 'Failed to create student account');
         }
+    };
+
+    const handleImportStudentsFromCSV = async (file: File) => {
+        try {
+            const text = await file.text();
+            const lines = parseCSV(text);
+
+            if (lines.length === 0) {
+                alert('CSV file is empty');
+                return;
+            }
+
+            // Detect header row
+            const hasHeader = lines[0][0]?.toLowerCase().includes('first name') ||
+                            lines[0][0]?.toLowerCase().includes('email') ||
+                            lines[0][0]?.toLowerCase().includes('password');
+            
+            const dataRows = hasHeader ? lines.slice(1) : lines;
+            const headerRow = hasHeader ? lines[0] : null;
+
+            // Find column indices
+            let firstNameIndex = -1;
+            let lastNameIndex = -1;
+            let emailIndex = -1;
+            let passwordIndex = -1;
+
+            if (headerRow) {
+                headerRow.forEach((header, index) => {
+                    const lowerHeader = header.toLowerCase();
+                    if (lowerHeader.includes('first') || lowerHeader.includes('fname')) {
+                        firstNameIndex = index;
+                    } else if (lowerHeader.includes('last') || lowerHeader.includes('lname') || lowerHeader.includes('surname')) {
+                        lastNameIndex = index;
+                    } else if (lowerHeader.includes('email')) {
+                        emailIndex = index;
+                    } else if (lowerHeader.includes('password') || lowerHeader.includes('pass')) {
+                        passwordIndex = index;
+                    }
+                });
+            } else {
+                // Default order: First Name, Last Name, Email, Password
+                firstNameIndex = 0;
+                lastNameIndex = 1;
+                emailIndex = 2;
+                passwordIndex = 3;
+            }
+
+            // Validate we have all required columns
+            if (emailIndex === -1) {
+                alert('CSV must contain an Email column');
+                return;
+            }
+            if (firstNameIndex === -1) {
+                alert('CSV must contain a First Name column');
+                return;
+            }
+            if (lastNameIndex === -1) {
+                alert('CSV must contain a Last Name column');
+                return;
+            }
+            if (passwordIndex === -1) {
+                alert('CSV must contain a Password column');
+                return;
+            }
+
+            // Parse students from CSV
+            const studentsToCreate: Array<{ firstName: string; lastName: string; email: string; password: string }> = [];
+            const errors: string[] = [];
+            const duplicates: string[] = [];
+
+            for (let i = 0; i < dataRows.length; i++) {
+                const row = dataRows[i];
+                if (row.length === 0) continue;
+
+                const firstName = (firstNameIndex >= 0 && firstNameIndex < row.length) ? row[firstNameIndex]?.trim() : '';
+                const lastName = (lastNameIndex >= 0 && lastNameIndex < row.length) ? row[lastNameIndex]?.trim() : '';
+                const email = (emailIndex >= 0 && emailIndex < row.length) ? row[emailIndex]?.trim() : '';
+                const password = (passwordIndex >= 0 && passwordIndex < row.length) ? row[passwordIndex]?.trim() : '';
+
+                // Validate required fields
+                if (!firstName) {
+                    errors.push(`Row ${i + 2}: Missing first name`);
+                    continue;
+                }
+                if (!lastName) {
+                    errors.push(`Row ${i + 2}: Missing last name`);
+                    continue;
+                }
+                if (!email || !email.includes('@')) {
+                    errors.push(`Row ${i + 2}: Invalid or missing email "${email}"`);
+                    continue;
+                }
+                // Validate password according to backend requirements:
+                // - At least 8 characters
+                // - At least one digit, one lowercase, one uppercase, and one special character
+                if (!password || password.length < 8) {
+                    errors.push(`Row ${i + 2}: Password must be at least 8 characters`);
+                    continue;
+                }
+                const passwordRegex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).*$/;
+                if (!passwordRegex.test(password)) {
+                    errors.push(`Row ${i + 2}: Password must contain at least one digit, one lowercase, one uppercase, and one special character (@#$%^&+=)`);
+                    continue;
+                }
+
+                // Check if student already exists
+                const existingStudent = allStudents.find(s => s.email.toLowerCase() === email.toLowerCase());
+                if (existingStudent) {
+                    duplicates.push(`Row ${i + 2}: Student with email "${email}" already exists`);
+                    continue;
+                }
+
+                studentsToCreate.push({ firstName, lastName, email, password });
+            }
+
+            if (studentsToCreate.length === 0) {
+                alert('No valid students to create.\n\n' +
+                    (errors.length > 0 ? `Errors:\n${errors.slice(0, 5).join('\n')}\n` : '') +
+                    (duplicates.length > 0 ? `\nDuplicates:\n${duplicates.slice(0, 5).join('\n')}` : ''));
+                return;
+            }
+
+            // Confirm creation
+            const confirmMessage = `Create ${studentsToCreate.length} student account(s)?` +
+                (errors.length > 0 ? `\n\n${errors.length} error(s) found and will be skipped.` : '') +
+                (duplicates.length > 0 ? `\n\n${duplicates.length} duplicate(s) will be skipped.` : '');
+
+            if (!confirm(confirmMessage)) return;
+
+            // Create students
+            let successCount = 0;
+            let failCount = 0;
+            const failedStudents: string[] = [];
+
+            for (const student of studentsToCreate) {
+                try {
+                    await authApi.register({
+                        ...student,
+                        role: 'STUDENT',
+                    });
+                    successCount++;
+                } catch (err: any) {
+                    failCount++;
+                    // Extract detailed error message from backend response
+                    let errorMessage = 'Failed to create account';
+                    if (err.response?.data) {
+                        if (typeof err.response.data === 'string') {
+                            errorMessage = err.response.data;
+                        } else if (err.response.data.message) {
+                            errorMessage = err.response.data.message;
+                        } else if (err.response.data.error) {
+                            errorMessage = err.response.data.error;
+                        } else if (Array.isArray(err.response.data)) {
+                            // Spring Boot validation errors format
+                            errorMessage = err.response.data.map((e: any) => e.message || e.defaultMessage || JSON.stringify(e)).join(', ');
+                        }
+                    } else if (err.message) {
+                        errorMessage = err.message;
+                    }
+                    failedStudents.push(`${student.email}: ${errorMessage}`);
+                    console.error(`Failed to create student ${student.email}:`, err.response?.data || err);
+                }
+            }
+
+            // Reload students list
+            await loadAllAvailableStudents();
+
+            // Show results
+            let resultMessage = `Successfully created ${successCount} student account(s)!`;
+            if (failCount > 0) {
+                resultMessage += `\n\n${failCount} account(s) failed to create:`;
+                resultMessage += '\n' + failedStudents.slice(0, 5).join('\n');
+                if (failedStudents.length > 5) {
+                    resultMessage += `\n... and ${failedStudents.length - 5} more`;
+                }
+            }
+            if (errors.length > 0 || duplicates.length > 0) {
+                resultMessage += `\n\n${errors.length + duplicates.length} row(s) were skipped due to errors or duplicates.`;
+            }
+
+            alert(resultMessage);
+
+            // Close modal if all succeeded
+            if (failCount === 0 && errors.length === 0 && duplicates.length === 0) {
+                setShowCreateStudentModal(false);
+            }
+        } catch (err: any) {
+            setError(err.message || 'Failed to import students from CSV');
+            console.error('CSV import error:', err);
+        }
+    };
+
+    const handleStudentFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith('.csv')) {
+            alert('Please select a CSV file');
+            return;
+        }
+
+        handleImportStudentsFromCSV(file);
+        // Reset input
+        event.target.value = '';
     };
 
     const handleAddStudents = async (selectedStudentIds: number[]) => {
@@ -294,42 +499,121 @@ const Students: React.FC = () => {
                 return;
             }
 
-            // Skip header row if present
-            const dataRows = lines[0][0]?.toLowerCase().includes('student id') || 
-                           lines[0][0]?.toLowerCase().includes('id') 
-                           ? lines.slice(1) 
-                           : lines;
+            // Detect header row and determine which column contains ID or Email
+            const hasHeader = lines[0][0]?.toLowerCase().includes('student id') || 
+                            lines[0][0]?.toLowerCase().includes('id') ||
+                            lines[0][0]?.toLowerCase().includes('email') ||
+                            lines[0][0]?.toLowerCase().includes('first name') ||
+                            lines[0][0]?.toLowerCase().includes('name');
+            
+            const dataRows = hasHeader ? lines.slice(1) : lines;
+            const headerRow = hasHeader ? lines[0] : null;
 
-            // Extract student IDs from CSV
-            // Support both formats: just IDs in first column, or full CSV with IDs
+            // Find column indices for ID and Email
+            let idColumnIndex = -1;
+            let emailColumnIndex = -1;
+
+            if (headerRow) {
+                headerRow.forEach((header, index) => {
+                    const lowerHeader = header.toLowerCase();
+                    if (lowerHeader.includes('id') && !lowerHeader.includes('email')) {
+                        idColumnIndex = index;
+                    } else if (lowerHeader.includes('email')) {
+                        emailColumnIndex = index;
+                    }
+                });
+            }
+
+            // Extract student IDs or Emails from CSV
             const studentIds: number[] = [];
             const errors: string[] = [];
+            const notFound: string[] = [];
 
             for (let i = 0; i < dataRows.length; i++) {
                 const row = dataRows[i];
                 if (row.length === 0) continue;
 
-                // Try to get ID from first column
-                const idStr = row[0]?.trim();
-                if (idStr) {
-                    const id = parseInt(idStr);
-                    if (!isNaN(id) && id > 0) {
-                        // Check if student exists
-                        const studentExists = allStudents.some(s => s.id === id);
-                        if (studentExists) {
-                            studentIds.push(id);
+                let studentId: number | null = null;
+
+                // Try to get ID first (if column index is known or first column is numeric)
+                if (idColumnIndex >= 0 && idColumnIndex < row.length) {
+                    const idStr = row[idColumnIndex]?.trim();
+                    if (idStr) {
+                        const id = parseInt(idStr);
+                        if (!isNaN(id) && id > 0) {
+                            studentId = id;
+                        }
+                    }
+                } else if (!hasHeader || idColumnIndex === -1) {
+                    // Try first column as ID if it's numeric
+                    const firstCell = row[0]?.trim();
+                    if (firstCell && /^\d+$/.test(firstCell)) {
+                        const id = parseInt(firstCell);
+                        if (!isNaN(id) && id > 0) {
+                            studentId = id;
+                        }
+                    }
+                }
+
+                // If no ID found, try Email
+                if (!studentId) {
+                    let email: string | null = null;
+                    
+                    if (emailColumnIndex >= 0 && emailColumnIndex < row.length) {
+                        email = row[emailColumnIndex]?.trim() || null;
+                    } else {
+                        // Try to find email in any column
+                        for (let j = 0; j < row.length; j++) {
+                            const cell = row[j]?.trim();
+                            if (cell && cell.includes('@') && cell.includes('.')) {
+                                email = cell;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (email) {
+                        const student = allStudents.find(s => s.email.toLowerCase() === email.toLowerCase());
+                        if (student) {
+                            studentId = student.id;
                         } else {
-                            errors.push(`Row ${i + 2}: Student ID ${id} not found`);
+                            notFound.push(`Row ${i + 2}: Student with email "${email}" not found`);
                         }
                     } else {
-                        errors.push(`Row ${i + 2}: Invalid student ID "${idStr}"`);
+                        // Try first non-empty column as email if it looks like an email
+                        const firstCell = row[0]?.trim();
+                        if (firstCell && firstCell.includes('@') && firstCell.includes('.')) {
+                            const student = allStudents.find(s => s.email.toLowerCase() === firstCell.toLowerCase());
+                            if (student) {
+                                studentId = student.id;
+                            } else {
+                                notFound.push(`Row ${i + 2}: Student with email "${firstCell}" not found`);
+                            }
+                        } else {
+                            errors.push(`Row ${i + 2}: No valid Student ID or Email found`);
+                        }
+                    }
+                }
+
+                // If we found a student ID, add it
+                if (studentId) {
+                    const studentExists = allStudents.some(s => s.id === studentId);
+                    if (studentExists) {
+                        studentIds.push(studentId);
+                    } else {
+                        errors.push(`Row ${i + 2}: Student ID ${studentId} not found in system`);
                     }
                 }
             }
 
             if (studentIds.length === 0) {
-                alert('No valid student IDs found in CSV file.\n' + 
-                      (errors.length > 0 ? '\nErrors:\n' + errors.slice(0, 5).join('\n') : ''));
+                const errorMsg = 'No valid students found in CSV file.\n\n' +
+                    'Please ensure the CSV contains either:\n' +
+                    '- Student IDs (numbers) in the first column, or\n' +
+                    '- Email addresses that match existing students\n\n' +
+                    (errors.length > 0 ? `Errors:\n${errors.slice(0, 5).join('\n')}\n` : '') +
+                    (notFound.length > 0 ? `\nNot Found:\n${notFound.slice(0, 5).join('\n')}` : '');
+                alert(errorMsg);
                 return;
             }
 
@@ -346,7 +630,8 @@ const Students: React.FC = () => {
             const skipped = studentIds.length - newIds.length;
             const confirmMessage = `Import ${newIds.length} student(s)?` + 
                 (skipped > 0 ? `\n${skipped} student(s) already in class will be skipped.` : '') +
-                (errors.length > 0 ? `\n\n${errors.length} error(s) found.` : '');
+                (errors.length > 0 ? `\n\n${errors.length} error(s) found.` : '') +
+                (notFound.length > 0 ? `\n\n${notFound.length} student(s) not found (check emails).` : '');
             
             if (!confirm(confirmMessage)) return;
 
@@ -361,7 +646,8 @@ const Students: React.FC = () => {
             await loadClasses();
 
             alert(`Successfully imported ${newIds.length} student(s) to the class!` + 
-                (skipped > 0 ? `\n${skipped} student(s) were skipped (already in class).` : ''));
+                (skipped > 0 ? `\n${skipped} student(s) were skipped (already in class).` : '') +
+                (notFound.length > 0 ? `\n\nNote: ${notFound.length} student(s) from CSV were not found in the system.` : ''));
         } catch (err: any) {
             setError(err.message || 'Failed to import CSV file');
             console.error('CSV import error:', err);
@@ -725,6 +1011,42 @@ const Students: React.FC = () => {
                                     <X size={20} />
                                 </button>
                             </div>
+
+                            {/* Import CSV Section */}
+                            <div className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                        <Upload size={16} />
+                                        Import Multiple Students from CSV
+                                    </h4>
+                                </div>
+                                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                                    CSV format: First Name, Last Name, Email, Password
+                                </p>
+                                <p className="text-xs text-orange-600 dark:text-orange-400 mb-3">
+                                    ⚠️ Password must be: min 8 chars, with digit, lowercase, uppercase, and special char (@#$%^&+=)
+                                </p>
+                                <label className="flex items-center justify-center gap-2 px-4 py-2 w-full bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors cursor-pointer">
+                                    <Upload size={16} />
+                                    Import CSV
+                                    <input
+                                        type="file"
+                                        accept=".csv"
+                                        className="hidden"
+                                        onChange={handleStudentFileSelect}
+                                    />
+                                </label>
+                            </div>
+
+                            <div className="relative mb-4">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                                </div>
+                                <div className="relative flex justify-center text-sm">
+                                    <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">OR</span>
+                                </div>
+                            </div>
+
                             <form onSubmit={handleCreateStudent} className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -769,11 +1091,14 @@ const Students: React.FC = () => {
                                     <input
                                         type="password"
                                         required
-                                        minLength={6}
+                                        minLength={8}
                                         value={newStudent.password}
                                         onChange={(e) => setNewStudent({ ...newStudent, password: e.target.value })}
                                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
                                     />
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Must be at least 8 characters with: digit, lowercase, uppercase, and special char (@#$%^&+=)
+                                    </p>
                                 </div>
                                 <div className="flex gap-3 pt-4">
                                     <button
