@@ -3,6 +3,8 @@ import { Search, Grid3x3, List, SlidersHorizontal } from 'lucide-react';
 import { mockCourses, categories } from './data/mockCourses';
 import CourseCard from './components/CourseCard';
 import TeacherCoursesView from './components/TeacherCoursesView';
+import StudentCoursesView from './components/StudentCoursesView';
+import StudentCourseView from './components/StudentCourseView';
 import CourseDetailView from './components/CourseDetailView';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -20,6 +22,8 @@ const CoursesApp: React.FC<CoursesAppProps> = ({ theme: initialTheme }) => {
     const [view, setView] = useState<'explore' | 'manage'>('explore');
     const [selectedCourseForDetail, setSelectedCourseForDetail] = useState<any | null>(null);
     const [showCourseDetail, setShowCourseDetail] = useState(false);
+    const [selectedStudentCourse, setSelectedStudentCourse] = useState<any | null>(null);
+    const [showStudentCourse, setShowStudentCourse] = useState(false);
 
     // Listen for theme changes and role info from parent Shell
     useEffect(() => {
@@ -39,6 +43,26 @@ const CoursesApp: React.FC<CoursesAppProps> = ({ theme: initialTheme }) => {
                 // When opened in a new page route, display CourseDetailView
                 setSelectedCourseForDetail(event.data.course);
                 setShowCourseDetail(true);
+            }
+            if (event.data.type === 'OPEN_STUDENT_COURSE') {
+                console.log('[CoursesApp] Opening student course:', event.data.course);
+                setSelectedStudentCourse(event.data.course);
+                setShowStudentCourse(true);
+                // Hide sidebar and navbar by sending message to parent
+                window.parent.postMessage({
+                    type: 'FULLSCREEN_MODE',
+                    enabled: true
+                }, '*');
+            }
+            if (event.data.type === 'STUDENT_COURSE_BACK') {
+                console.log('[CoursesApp] Closing student course view');
+                setSelectedStudentCourse(null);
+                setShowStudentCourse(false);
+                // Show sidebar and navbar again
+                window.parent.postMessage({
+                    type: 'FULLSCREEN_MODE',
+                    enabled: false
+                }, '*');
             }
         };
 
@@ -72,7 +96,21 @@ const CoursesApp: React.FC<CoursesAppProps> = ({ theme: initialTheme }) => {
             return b.students - a.students; // popular
         });
 
-    // Course Detail View - Show when course detail is requested
+    // Student Course View - Full screen learning view
+    if (showStudentCourse && selectedStudentCourse) {
+        return (
+            <StudentCourseView
+                course={selectedStudentCourse}
+                theme={theme}
+                onBack={() => {
+                    setSelectedStudentCourse(null);
+                    setShowStudentCourse(false);
+                }}
+            />
+        );
+    }
+
+    // Course Detail View - Show when course detail is requested (for teachers)
     if (showCourseDetail && selectedCourseForDetail) {
         return (
             <CourseDetailView
@@ -89,6 +127,11 @@ const CoursesApp: React.FC<CoursesAppProps> = ({ theme: initialTheme }) => {
     // Teacher view
     if (view === 'manage') {
         return <TeacherCoursesView theme={theme} />;
+    }
+
+    // Student view - show enrolled courses
+    if (view === 'explore') {
+        return <StudentCoursesView theme={theme} />;
     }
 
     if (selectedCourse) {

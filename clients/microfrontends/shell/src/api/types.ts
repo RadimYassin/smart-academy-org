@@ -329,7 +329,9 @@ export interface Enrollment {
     id: string;
     courseId: string;
     courseTitle?: string;
-    studentId: number;
+    studentId?: number;
+    studentFirstName?: string;
+    studentLastName?: string;
     classId?: string;
     className?: string;
     assignedBy: number;

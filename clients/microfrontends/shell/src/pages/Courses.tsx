@@ -10,6 +10,7 @@ import {
     quizApi, 
     questionApi 
 } from '../api/courseApi';
+import { enrollmentApi } from '../api/enrollmentApi';
 
 const Courses: React.FC = () => {
     const { user } = useAuth();
@@ -261,10 +262,57 @@ const Courses: React.FC = () => {
                     }
                 }
 
-                // Open course detail in new page
+                // Fetch student's enrolled courses
+                if (event.data.type === 'FETCH_MY_COURSES') {
+                    console.log('[Shell Courses] Fetching student courses');
+                    if (!user?.id) {
+                        iframe.contentWindow.postMessage({
+                            type: 'MY_COURSES_ERROR',
+                            error: 'User ID not found'
+                        }, '*');
+                        return;
+                    }
+
+                    try {
+                        // Get enrollments first
+                        const enrollments = await enrollmentApi.getMyCourses();
+                        console.log('[Shell Courses] Enrollments loaded:', enrollments);
+
+                        // Extract course IDs from enrollments and fetch full course details
+                        const courseIds = enrollments.map(e => e.courseId);
+                        const coursePromises = courseIds.map(courseId => 
+                            courseApi.getCourseById(courseId).catch(err => {
+                                console.warn(`[Shell Courses] Failed to fetch course ${courseId}:`, err);
+                                return null;
+                            })
+                        );
+                        const courses = (await Promise.all(coursePromises)).filter(c => c !== null) as any[];
+
+                        console.log('[Shell Courses] Courses loaded:', courses);
+                        iframe.contentWindow.postMessage({
+                            type: 'MY_COURSES_LOADED',
+                            enrollments,
+                            courses
+                        }, '*');
+                    } catch (error: any) {
+                        console.error('[Shell Courses] Error fetching student courses:', error);
+                        iframe.contentWindow.postMessage({
+                            type: 'MY_COURSES_ERROR',
+                            error: error.message || 'Failed to load courses'
+                        }, '*');
+                    }
+                }
+
+                // Open course detail in new page (for teacher)
                 if (event.data.type === 'OPEN_COURSE_DETAIL') {
                     console.log('[Shell Courses] Navigating to course detail:', event.data.courseId);
                     navigate(`/teacher/courses/${event.data.courseId}`);
+                }
+
+                // Open student course view - navigate to fullscreen page
+                if (event.data.type === 'OPEN_STUDENT_COURSE') {
+                    console.log('[Shell Courses] Opening student course view:', event.data.courseId);
+                    navigate(`/student/courses/${event.data.courseId}`);
                 }
             } catch (error) {
                 console.error('[Shell Courses] Unexpected error:', error);
@@ -285,6 +333,13 @@ const Courses: React.FC = () => {
                 if (user?.role === 'TEACHER' && user?.id) {
                     setTimeout(() => {
                         iframe.contentWindow?.postMessage({ type: 'FETCH_TEACHER_COURSES' }, '*');
+                    }, 100);
+                }
+                
+                // If student, automatically trigger enrolled courses fetch
+                if (user?.role === 'STUDENT' && user?.id) {
+                    setTimeout(() => {
+                        iframe.contentWindow?.postMessage({ type: 'FETCH_MY_COURSES' }, '*');
                     }, 100);
                 }
             }

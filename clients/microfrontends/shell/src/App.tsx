@@ -7,6 +7,7 @@ import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import Courses from './pages/Courses';
 import CourseDetail from './pages/CourseDetail';
+import StudentCourse from './pages/StudentCourse';
 import Students from './pages/Students';
 
 function App() {
@@ -17,6 +18,16 @@ function App() {
           <Routes>
             {/* Auth Route - Public */}
             <Route path="/auth" element={<AuthPage />} />
+
+            {/* Student Course Route - Fullscreen (no layout) */}
+            <Route
+              path="/student/courses/:courseId"
+              element={
+                <ProtectedRoute>
+                  <StudentCourse />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Protected Routes with Layout */}
             <Route

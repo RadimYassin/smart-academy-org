@@ -29,3 +29,4 @@ export {
 export { analyticsApi, profilerApi, predictorApi, recommendationApi } from './analyticsApi';
 export { classApi } from './classApi';
 export { enrollmentApi } from './enrollmentApi';
+export { progressApi } from './progressApi';

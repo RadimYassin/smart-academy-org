@@ -621,23 +621,32 @@ const CourseDetailView: React.FC<CourseDetailViewProps> = ({ course: initialCour
                                         )}
                                         <div>
                                             <p className="font-medium text-gray-900 dark:text-white">
-                                                {enrollment.assignmentType === 'CLASS'
-                                                    ? enrollment.className || `Class ${enrollment.classId}`
-                                                    : `Student ID: ${enrollment.studentId}`}
+                                                {enrollment.studentId && enrollment.studentFirstName && enrollment.studentLastName
+                                                    ? `${enrollment.studentFirstName} ${enrollment.studentLastName}`
+                                                    : enrollment.studentId
+                                                        ? `Student ID: ${enrollment.studentId}`
+                                                        : enrollment.className
+                                                            ? enrollment.className
+                                                            : `Class ${enrollment.classId || 'N/A'}`}
                                             </p>
                                             <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                {enrollment.assignmentType === 'CLASS' && enrollment.className && (
+                                                    <span className="mr-2">Class Assignment • </span>
+                                                )}
                                                 Assigned on {new Date(enrollment.enrolledAt).toLocaleDateString()}
                                             </p>
                                         </div>
                                     </div>
-                                    {enrollment.assignmentType === 'INDIVIDUAL' && (
+                                    {(enrollment.assignmentType === 'INDIVIDUAL' || (enrollment.assignmentType === 'CLASS' && enrollment.studentId)) && (
                                         <button
                                             onClick={() => {
-                                                window.parent.postMessage({
-                                                    type: 'UNENROLL_STUDENT',
-                                                    courseId: course.id,
-                                                    studentId: enrollment.studentId
-                                                }, '*');
+                                                if (enrollment.studentId) {
+                                                    window.parent.postMessage({
+                                                        type: 'UNENROLL_STUDENT',
+                                                        courseId: course.id,
+                                                        studentId: enrollment.studentId
+                                                    }, '*');
+                                                }
                                             }}
                                             className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                             title="Remove student"

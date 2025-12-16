@@ -194,9 +194,30 @@ const CourseDetail: React.FC = () => {
                     try {
                         const enrollments = await enrollmentApi.getCourseEnrollments(event.data.courseId);
                         console.log('[Shell CourseDetail] Enrollments loaded:', enrollments);
+                        
+                        // Enrich enrollments with student names
+                        const enrichedEnrollments = await Promise.all(
+                            enrollments.map(async (enrollment) => {
+                                if (enrollment.studentId) {
+                                    try {
+                                        const student = await userApi.getUserById(enrollment.studentId);
+                                        return {
+                                            ...enrollment,
+                                            studentFirstName: student.firstName,
+                                            studentLastName: student.lastName
+                                        };
+                                    } catch (error: any) {
+                                        console.warn(`[Shell CourseDetail] Failed to fetch student ${enrollment.studentId}:`, error);
+                                        return enrollment; // Return original enrollment if student fetch fails
+                                    }
+                                }
+                                return enrollment;
+                            })
+                        );
+                        
                         iframe.contentWindow.postMessage({
                             type: 'ENROLLMENTS_LOADED',
-                            enrollments
+                            enrollments: enrichedEnrollments
                         }, '*');
                     } catch (error: any) {
                         console.error('[Shell CourseDetail] Error fetching enrollments:', error);
@@ -222,6 +243,18 @@ const CourseDetail: React.FC = () => {
                         console.log('[Shell CourseDetail] Sending request:', request);
                         const enrollment = await enrollmentApi.assignStudent(request);
                         console.log('[Shell CourseDetail] Student assigned:', enrollment);
+                        
+                        // Enrich enrollment with student name
+                        if (enrollment.studentId) {
+                            try {
+                                const student = await userApi.getUserById(enrollment.studentId);
+                                enrollment.studentFirstName = student.firstName;
+                                enrollment.studentLastName = student.lastName;
+                            } catch (error: any) {
+                                console.warn(`[Shell CourseDetail] Failed to fetch student ${enrollment.studentId}:`, error);
+                            }
+                        }
+                        
                         iframe.contentWindow.postMessage({
                             type: 'STUDENT_ASSIGNED',
                             enrollment
@@ -261,9 +294,30 @@ const CourseDetail: React.FC = () => {
                         console.log('[Shell CourseDetail] Sending request:', request);
                         const enrollments = await enrollmentApi.assignClass(request);
                         console.log('[Shell CourseDetail] Class assigned:', enrollments);
+                        
+                        // Enrich enrollments with student names
+                        const enrichedEnrollments = await Promise.all(
+                            enrollments.map(async (enrollment) => {
+                                if (enrollment.studentId) {
+                                    try {
+                                        const student = await userApi.getUserById(enrollment.studentId);
+                                        return {
+                                            ...enrollment,
+                                            studentFirstName: student.firstName,
+                                            studentLastName: student.lastName
+                                        };
+                                    } catch (error: any) {
+                                        console.warn(`[Shell CourseDetail] Failed to fetch student ${enrollment.studentId}:`, error);
+                                        return enrollment;
+                                    }
+                                }
+                                return enrollment;
+                            })
+                        );
+                        
                         iframe.contentWindow.postMessage({
                             type: 'CLASS_ASSIGNED',
-                            enrollments
+                            enrollments: enrichedEnrollments
                         }, '*');
                     } catch (error: any) {
                         console.error('[Shell CourseDetail] Error assigning class:', error);

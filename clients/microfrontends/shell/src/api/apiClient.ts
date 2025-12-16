@@ -116,10 +116,10 @@ apiClient.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
         // Only add token for protected endpoints
         if (!isPublicEndpoint(config.url)) {
-            const token = tokenManager.getAccessToken();
+        const token = tokenManager.getAccessToken();
 
-            if (token && config.headers) {
-                config.headers.Authorization = `Bearer ${token}`;
+        if (token && config.headers) {
+            config.headers.Authorization = `Bearer ${token}`;
             }
         } else {
             // For public endpoints, explicitly remove Authorization header if present

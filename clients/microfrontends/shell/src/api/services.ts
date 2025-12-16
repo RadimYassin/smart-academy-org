@@ -104,6 +104,14 @@ export const ENDPOINTS = {
         MY_COURSES: `${SERVICES.COURSE_SERVICE}/api/enrollments/my-courses`,
     },
 
+    // Progress Tracking Endpoints
+    PROGRESS: {
+        LESSON_COMPLETE: (lessonId: string) => `${SERVICES.COURSE_SERVICE}/api/progress/lessons/${lessonId}/complete`,
+        LESSON_PROGRESS: (lessonId: string) => `${SERVICES.COURSE_SERVICE}/api/progress/lessons/${lessonId}`,
+        COURSE_PROGRESS: (courseId: string) => `${SERVICES.COURSE_SERVICE}/api/progress/courses/${courseId}`,
+        ALL_LESSON_PROGRESS: (courseId: string) => `${SERVICES.COURSE_SERVICE}/api/progress/courses/${courseId}/lessons`,
+    },
+
     // LMS Connector Endpoints
     LMS: {
         SYNC_STUDENTS: (courseId: number) =>

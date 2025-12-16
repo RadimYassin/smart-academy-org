@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -56,6 +57,18 @@ public class ProgressController {
         Long targetStudentId = (studentId != null) ? studentId : userId;
 
         ProgressDto.CourseProgressResponse response = progressService.getCourseProgress(courseId, targetStudentId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/courses/{courseId}/lessons")
+    @PreAuthorize("hasRole('STUDENT')")
+    @Operation(summary = "Get all lesson progress for a course", 
+               description = "Returns all lesson progress for the course. Creates LessonProgress records for lessons that don't have one yet, ensuring each lesson has its own progress tracking.")
+    public ResponseEntity<List<ProgressDto.LessonProgressResponse>> getAllLessonProgressForCourse(
+            @PathVariable UUID courseId,
+            Authentication authentication) {
+        Long studentId = extractUserId(authentication);
+        List<ProgressDto.LessonProgressResponse> response = progressService.getAllLessonProgressForCourse(courseId, studentId);
         return ResponseEntity.ok(response);
     }
 

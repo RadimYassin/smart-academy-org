@@ -143,7 +143,7 @@ public class EnrollmentService {
                 }
                 
                 successCount++;
-                
+
                 log.debug("Successfully enrolled student {} in course {} (Enrollment ID: {})", 
                         studentId, courseId, saved.getId());
                 enrollments.add(toEnrollmentResponse(saved));

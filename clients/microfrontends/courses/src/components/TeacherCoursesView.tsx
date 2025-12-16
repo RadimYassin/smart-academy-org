@@ -226,13 +226,13 @@ const TeacherCoursesView: React.FC<TeacherCoursesViewProps> = () => {
                     className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-8"
                 >
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div>
+                    <div>
                             <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
-                                My Courses
-                            </h1>
+                            My Courses
+                        </h1>
                             <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-                                Manage and track your {courses.length} {courses.length === 1 ? 'course' : 'courses'}
-                            </p>
+                            Manage and track your {courses.length} {courses.length === 1 ? 'course' : 'courses'}
+                        </p>
                             {courses.length > 0 && (
                                 <div className="flex items-center gap-4 mt-3 text-sm text-gray-500 dark:text-gray-400">
                                     <div className="flex items-center gap-1">
@@ -245,12 +245,12 @@ const TeacherCoursesView: React.FC<TeacherCoursesViewProps> = () => {
                                     </div>
                                 </div>
                             )}
-                        </div>
-                        <button
-                            onClick={() => setIsCreateModalOpen(true)}
+                    </div>
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
                             className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-xl hover:shadow-xl hover:shadow-primary/30 transition-all transform hover:scale-105 active:scale-95"
-                        >
-                            <Plus size={20} />
+                    >
+                        <Plus size={20} />
                             <span>Create Course</span>
                         </button>
                     </div>
@@ -317,10 +317,10 @@ const TeacherCoursesView: React.FC<TeacherCoursesViewProps> = () => {
                                         className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                                     >
                                         Clear filters
-                                    </button>
+                    </button>
                                 )}
                             </div>
-                        </div>
+                </div>
                     </motion.div>
                 )}
 
