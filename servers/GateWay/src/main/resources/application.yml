@@ -10,6 +10,32 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
+      # Explicit Routes Configuration
+      routes:
+        # User Management Service Routes
+        - id: user-management-service
+          uri: http://user-management-service:8082
+          predicates:
+            - Path=/user-management-service/**
+          filters:
+            - StripPrefix=1
+        
+        # Course Management Service Routes  
+        - id: course-service
+          uri: http://course-management-service:8081
+          predicates:
+            - Path=/course-service/**
+          filters:
+            - StripPrefix=1
+            
+        # LMS Connector Service Routes
+        - id: lms-connector
+          uri: http://lms-connector-service:3000
+          predicates:
+            - Path=/lmsconnector/**
+          filters:
+            - StripPrefix=1
+      
       # CORS Configuration
       globalcors:
         cors-configurations:
@@ -37,8 +63,9 @@ application:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka}
     register-with-eureka: true
     fetch-registry: true
   instance:
-    prefer-ip-address: true
+    prefer-ip-address: false
+    hostname: gateway-service

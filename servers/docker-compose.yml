@@ -1,0 +1,180 @@
+version: '3.8'
+
+services:
+  # PostgreSQL for User Management
+  user-db:
+    image: postgres:15-alpine
+    container_name: user-management-db
+    environment:
+      POSTGRES_DB: user_management_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+    networks:
+      - smart-academy-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL for Course Management
+  course-db:
+    image: postgres:15-alpine
+    container_name: course-management-db
+    environment:
+      POSTGRES_DB: course_management_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - course-db-data:/var/lib/postgresql/data
+    networks:
+      - smart-academy-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL for LMS Connector
+  lms-db:
+    image: postgres:15-alpine
+    container_name: lms-connector-db
+    environment:
+      POSTGRES_DB: lmsconnector_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - lms-db-data:/var/lib/postgresql/data
+    networks:
+      - smart-academy-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Eureka Server (Service Discovery)
+  eureka-server:
+    build:
+      context: ./Eureka-Server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - smart-academy-network
+    restart: on-failure
+
+  # Gateway Service
+  gateway:
+    build:
+      context: ./GateWay
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    ports:
+      - "8888:8888"
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka
+      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    depends_on:
+      eureka-server:
+        condition: service_started
+    networks:
+      - smart-academy-network
+    restart: on-failure
+
+  # User Management Service
+  user-management:
+    build:
+      context: ./User-Management
+      dockerfile: Dockerfile
+    container_name: user-management-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/user_management_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka
+      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800000}
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-smtp.gmail.com}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-587}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME:-radimyassin20@gmail.com}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD:-bzqconpstpqzonse}
+      EUREKA_INSTANCE_HOSTNAME: user-management-service
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: false
+    depends_on:
+      user-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - smart-academy-network
+    restart: on-failure
+
+  # Course Management Service
+  course-management:
+    build:
+      context: ./Cour-Management
+      dockerfile: Dockerfile
+    container_name: course-management-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://course-db:5432/course_management_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka
+      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    depends_on:
+      course-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - smart-academy-network
+    restart: on-failure
+
+  # LMS Connector Service
+  lms-connector:
+    build:
+      context: ./lmsconnector
+      dockerfile: Dockerfile
+    container_name: lms-connector-service
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_HOST: lms-db
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: lmsconnector_db
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    depends_on:
+      lms-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - smart-academy-network
+    restart: on-failure
+
+networks:
+  smart-academy-network:
+    driver: bridge
+
+volumes:
+  user-db-data:
+  course-db-data:
+  lms-db-data:
