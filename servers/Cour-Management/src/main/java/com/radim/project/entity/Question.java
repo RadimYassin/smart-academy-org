@@ -1,16 +1,10 @@
 package com.radim.project.entity;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,34 +26,27 @@ public class Question {
     private Quiz quiz;
 
     @NotBlank
-    private String content;
+    @Column(nullable = false)
+    private String questionText;
 
-    @Column(columnDefinition = "TEXT") // Store as JSON string
-    private String options;
+    @Column(nullable = false)
+    private String questionType;
 
-    @Min(0)
-    @Max(3)
-    private int correctOptionIndex;
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<QuestionOption> options = new ArrayList<>();
 
-    // Helper methods to handle List<String> <-> JSON String conversion if needed
-    // For now, we expose the raw String or we can add a transient getter/setter
+    private Integer points;
 
-    public List<String> getOptionsList() {
-        if (options == null)
-            return List.of();
-        try {
-            return new ObjectMapper().readValue(options, new TypeReference<List<String>>() {
-            });
-        } catch (IOException e) {
-            return List.of();
-        }
+    // Helper method to add option
+    public void addOption(QuestionOption option) {
+        options.add(option);
+        option.setQuestion(this);
     }
 
-    public void setOptionsList(List<String> optionsList) {
-        try {
-            this.options = new ObjectMapper().writeValueAsString(optionsList);
-        } catch (JsonProcessingException e) {
-            this.options = "[]";
-        }
+    // Helper method to remove option
+    public void removeOption(QuestionOption option) {
+        options.remove(option);
+        option.setQuestion(null);
     }
 }

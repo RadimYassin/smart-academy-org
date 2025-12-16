@@ -78,7 +78,10 @@ public class QuizAttemptService {
             Question question = questionRepository.findById(submission.getQuestionId())
                     .orElseThrow(() -> new RuntimeException("Question not found: " + submission.getQuestionId()));
 
-            boolean isCorrect = question.getCorrectOptionIndex() == submission.getSelectedOptionIndex();
+            // Check if the selected option is correct
+            boolean isCorrect = question.getOptions().stream()
+                    .anyMatch(opt -> opt.getId().equals(submission.getSelectedOptionId()) && opt.getIsCorrect());
+
             if (isCorrect) {
                 correctCount++;
             }
@@ -86,7 +89,7 @@ public class QuizAttemptService {
             StudentAnswer answer = StudentAnswer.builder()
                     .quizAttempt(attempt)
                     .question(question)
-                    .selectedOptionIndex(submission.getSelectedOptionIndex())
+                    .selectedOptionId(submission.getSelectedOptionId())
                     .isCorrect(isCorrect)
                     .build();
 
@@ -141,7 +144,7 @@ public class QuizAttemptService {
      * Get student's attempts for a specific quiz
      */
     public List<QuizAttemptDto.AttemptResponse> getStudentQuizAttempts(Long studentId, UUID quizId) {
-        return quizAttemptRepository.findByStudentIdAndQuizId(studentId, quizId).stream()
+        return quizAttemptRepository.findByStudentIdAndQuiz_Id(studentId, quizId).stream()
                 .map(this::mapToResponseWithoutAnswers)
                 .collect(Collectors.toList());
     }
@@ -173,13 +176,21 @@ public class QuizAttemptService {
 
     private QuizAttemptDto.AttemptResponse mapToResponseWithAnswers(QuizAttempt attempt, List<StudentAnswer> answers) {
         List<QuizAttemptDto.AnswerDetail> answerDetails = answers.stream()
-                .map(answer -> QuizAttemptDto.AnswerDetail.builder()
-                        .questionId(answer.getQuestion().getId())
-                        .questionContent(answer.getQuestion().getContent())
-                        .selectedOptionIndex(answer.getSelectedOptionIndex())
-                        .correctOptionIndex(answer.getQuestion().getCorrectOptionIndex())
-                        .isCorrect(answer.getIsCorrect())
-                        .build())
+                .map(answer -> {
+                    UUID correctOptionId = answer.getQuestion().getOptions().stream()
+                            .filter(QuestionOption::getIsCorrect)
+                            .map(QuestionOption::getId)
+                            .findFirst()
+                            .orElse(null);
+
+                    return QuizAttemptDto.AnswerDetail.builder()
+                            .questionId(answer.getQuestion().getId())
+                            .questionContent(answer.getQuestion().getQuestionText())
+                            .selectedOptionId(answer.getSelectedOptionId())
+                            .correctOptionId(correctOptionId)
+                            .isCorrect(answer.getIsCorrect())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return QuizAttemptDto.AttemptResponse.builder()

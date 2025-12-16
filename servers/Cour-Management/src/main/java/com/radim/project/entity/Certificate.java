@@ -1,23 +1,22 @@
 package com.radim.project.entity;
 
-import com.radim.project.entity.enums.QuizDifficulty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "quizzes")
+@Table(name = "certificates")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Quiz {
+public class Certificate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -28,29 +27,30 @@ public class Quiz {
     @ToString.Exclude
     private Course course;
 
-    @NotBlank
-    private String title;
-
-    private String description;
-
-    @Enumerated(EnumType.STRING)
-    private QuizDifficulty difficulty;
-
-    @Column(name = "passing_score")
-    @Builder.Default
-    private Integer passingScore = 60;
-
+    @NotNull
     @Column(nullable = false)
-    @Builder.Default
-    private Boolean mandatory = false;
+    private Long studentId;
 
-    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Question> questions;
+    @NotBlank
+    @Column(nullable = false, unique = true, length = 50)
+    private String verificationCode;
+
+    @NotNull
+    @Column(nullable = false)
+    private Double completionRate;
+
+    @NotNull
+    @Column(nullable = false)
+    private LocalDateTime issuedAt;
+
+    @Column(length = 500)
+    private String pdfUrl;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 }

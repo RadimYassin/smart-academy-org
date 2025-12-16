@@ -30,7 +30,7 @@ public class StudentAnswer {
     private Question question;
 
     @Column(nullable = false)
-    private Integer selectedOptionIndex; // Index of option student selected
+    private UUID selectedOptionId; // UUID of option student selected
 
     @Column(nullable = false)
     private Boolean isCorrect; // Whether answer was correct

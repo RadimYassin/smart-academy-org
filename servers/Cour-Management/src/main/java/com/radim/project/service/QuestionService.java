@@ -1,9 +1,8 @@
 package com.radim.project.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.radim.project.dto.QuizDto;
 import com.radim.project.entity.Question;
+import com.radim.project.entity.QuestionOption;
 import com.radim.project.entity.Quiz;
 import com.radim.project.repository.QuestionRepository;
 import com.radim.project.repository.QuizRepository;
@@ -24,7 +23,6 @@ public class QuestionService {
 
     private final QuestionRepository questionRepository;
     private final QuizRepository quizRepository;
-    private final ObjectMapper objectMapper;
 
     public List<QuizDto.QuestionResponse> getQuestionsByQuiz(UUID quizId) {
         return questionRepository.findByQuizId(quizId).stream()
@@ -41,11 +39,21 @@ public class QuestionService {
 
         Question question = Question.builder()
                 .quiz(quiz)
-                .content(request.getContent())
-                .correctOptionIndex(request.getCorrectOptionIndex())
+                .questionText(request.getQuestionText())
+                .questionType(request.getQuestionType())
+                .points(request.getPoints())
                 .build();
 
-        question.setOptionsList(request.getOptions());
+        // Create and add options
+        for (int i = 0; i < request.getOptions().size(); i++) {
+            QuizDto.OptionRequest optionRequest = request.getOptions().get(i);
+            QuestionOption option = QuestionOption.builder()
+                    .optionText(optionRequest.getOptionText())
+                    .isCorrect(optionRequest.getIsCorrect())
+                    .optionOrder(i)
+                    .build();
+            question.addOption(option);
+        }
 
         Question savedQuestion = questionRepository.save(question);
         return mapToResponse(savedQuestion);
@@ -62,9 +70,21 @@ public class QuestionService {
 
         validateOwnership(question.getQuiz().getCourse().getTeacherId());
 
-        question.setContent(request.getContent());
-        question.setCorrectOptionIndex(request.getCorrectOptionIndex());
-        question.setOptionsList(request.getOptions());
+        question.setQuestionText(request.getQuestionText());
+        question.setQuestionType(request.getQuestionType());
+        question.setPoints(request.getPoints());
+
+        // Clear existing options and add new ones
+        question.getOptions().clear();
+        for (int i = 0; i < request.getOptions().size(); i++) {
+            QuizDto.OptionRequest optionRequest = request.getOptions().get(i);
+            QuestionOption option = QuestionOption.builder()
+                    .optionText(optionRequest.getOptionText())
+                    .isCorrect(optionRequest.getIsCorrect())
+                    .optionOrder(i)
+                    .build();
+            question.addOption(option);
+        }
 
         Question updatedQuestion = questionRepository.save(question);
         return mapToResponse(updatedQuestion);
@@ -105,12 +125,23 @@ public class QuestionService {
     }
 
     private QuizDto.QuestionResponse mapToResponse(Question question) {
+        List<QuizDto.OptionResponse> optionResponses = question.getOptions().stream()
+                .sorted((o1, o2) -> Integer.compare(o1.getOptionOrder() != null ? o1.getOptionOrder() : 0,
+                        o2.getOptionOrder() != null ? o2.getOptionOrder() : 0))
+                .map(option -> QuizDto.OptionResponse.builder()
+                        .id(option.getId())
+                        .optionText(option.getOptionText())
+                        .isCorrect(option.getIsCorrect())
+                        .build())
+                .collect(Collectors.toList());
+
         return QuizDto.QuestionResponse.builder()
                 .id(question.getId())
                 .quizId(question.getQuiz().getId())
-                .content(question.getContent())
-                .options(question.getOptionsList())
-                .correctOptionIndex(question.getCorrectOptionIndex())
+                .questionText(question.getQuestionText())
+                .questionType(question.getQuestionType())
+                .options(optionResponses)
+                .points(question.getPoints())
                 .build();
     }
 }

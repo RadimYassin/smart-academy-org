@@ -1,8 +1,6 @@
 package com.radim.project.dto;
 
 import com.radim.project.entity.enums.QuizDifficulty;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -48,13 +46,28 @@ public class QuizDto {
     @Builder
     public static class QuestionRequest {
         @NotBlank
-        private String content;
+        private String questionText;
+
+        @NotBlank
+        private String questionType;
+
         @NotNull
-        @Size(min = 4, max = 4)
-        private List<String> options;
-        @Min(0)
-        @Max(3)
-        private int correctOptionIndex;
+        @Size(min = 2, max = 10)
+        private List<OptionRequest> options;
+
+        private Integer points;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class OptionRequest {
+        @NotBlank
+        private String optionText;
+
+        @NotNull
+        private Boolean isCorrect;
     }
 
     @Data
@@ -64,8 +77,19 @@ public class QuizDto {
     public static class QuestionResponse {
         private UUID id;
         private UUID quizId;
-        private String content;
-        private List<String> options;
-        private int correctOptionIndex;
+        private String questionText;
+        private String questionType;
+        private List<OptionResponse> options;
+        private Integer points;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class OptionResponse {
+        private UUID id;
+        private String optionText;
+        private Boolean isCorrect;
     }
 }

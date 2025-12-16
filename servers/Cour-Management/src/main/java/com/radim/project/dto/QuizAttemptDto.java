@@ -23,7 +23,7 @@ public class QuizAttemptDto {
         @AllArgsConstructor
         public static class AnswerSubmission {
             private UUID questionId;
-            private Integer selectedOptionIndex;
+            private UUID selectedOptionId;
         }
     }
 
@@ -52,8 +52,8 @@ public class QuizAttemptDto {
     public static class AnswerDetail {
         private UUID questionId;
         private String questionContent;
-        private Integer selectedOptionIndex;
-        private Integer correctOptionIndex;
+        private UUID selectedOptionId;
+        private UUID correctOptionId;
         private Boolean isCorrect;
     }
 

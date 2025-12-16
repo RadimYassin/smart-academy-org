@@ -29,7 +29,8 @@ public class SecurityConfig {
                                                                 "/v3/api-docs/**",
                                                                 "/api-docs/**",
                                                                 "/swagger-ui/**",
-                                                                "/swagger-ui.html")
+                                                                "/swagger-ui.html",
+                                                                "/api/certificates/verify/**")
                                                 .permitAll()
                                                 // Public endpoints if any (none specified, but maybe GET courses?)
                                                 // Requirements say "Student can List all courses", so it's

@@ -1,56 +1,51 @@
 package com.radim.project.entity;
 
-import com.radim.project.entity.enums.QuizDifficulty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "quizzes")
+@Table(name = "classes")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Quiz {
+public class StudentClass {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    @ToString.Exclude
-    private Course course;
-
     @NotBlank
-    private String title;
+    @Size(min = 3, max = 255)
+    @Column(nullable = false)
+    private String name;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Enumerated(EnumType.STRING)
-    private QuizDifficulty difficulty;
-
-    @Column(name = "passing_score")
-    @Builder.Default
-    private Integer passingScore = 60;
-
+    @NotNull
     @Column(nullable = false)
-    @Builder.Default
-    private Boolean mandatory = false;
+    private Long teacherId;
 
-    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Question> questions;
+    @OneToMany(mappedBy = "studentClass", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ClassStudent> students = new ArrayList<>();
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 }
