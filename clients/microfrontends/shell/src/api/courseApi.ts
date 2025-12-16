@@ -28,6 +28,13 @@ export const courseApi = {
     },
 
     /**
+     * Get courses by teacher ID
+     */
+    getTeacherCourses: async (teacherId: number): Promise<Course[]> => {
+        return get<Course[]>(`${ENDPOINTS.COURSES.BASE}/teacher/${teacherId}`);
+    },
+
+    /**
      * Get course by ID
      */
     getCourseById: async (courseId: string): Promise<Course> => {

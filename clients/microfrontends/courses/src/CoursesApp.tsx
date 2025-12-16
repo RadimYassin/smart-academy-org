@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Grid3x3, List, SlidersHorizontal } from 'lucide-react';
 import { mockCourses, categories } from './data/mockCourses';
 import CourseCard from './components/CourseCard';
+import TeacherCoursesView from './components/TeacherCoursesView';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CoursesAppProps {
@@ -15,12 +16,20 @@ const CoursesApp: React.FC<CoursesAppProps> = ({ theme: initialTheme }) => {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
     const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'price'>('popular');
+    const [view, setView] = useState<'explore' | 'manage'>('explore');
 
-    // Listen for theme changes from parent Shell
+    // Listen for theme changes and role info from parent Shell
     useEffect(() => {
         const handleMessage = (event: MessageEvent) => {
+            console.log('[CoursesApp] Received message:', event.data);
+
             if (event.data.type === 'THEME_CHANGE') {
+                console.log('[CoursesApp] Theme change:', event.data.theme);
                 setTheme(event.data.theme);
+            }
+            if (event.data.type === 'SET_VIEW') {
+                console.log('[CoursesApp] View change to:', event.data.view);
+                setView(event.data.view); // 'explore' for students, 'manage' for teachers
             }
         };
 
@@ -53,6 +62,11 @@ const CoursesApp: React.FC<CoursesAppProps> = ({ theme: initialTheme }) => {
             if (sortBy === 'price') return a.price - b.price;
             return b.students - a.students; // popular
         });
+
+    // Teacher view
+    if (view === 'manage') {
+        return <TeacherCoursesView theme={theme} />;
+    }
 
     if (selectedCourse) {
         const course = mockCourses.find((c) => c.id === selectedCourse);

@@ -34,6 +34,13 @@ public class CourseController {
         return ResponseEntity.ok(courseService.getCourseById(courseId));
     }
 
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @GetMapping("/teacher/{teacherId}")
+    @Operation(summary = "Get courses by teacher ID")
+    public ResponseEntity<List<CourseDto.Response>> getCoursesByTeacherId(@PathVariable Long teacherId) {
+        return ResponseEntity.ok(courseService.getCoursesByTeacherId(teacherId));
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     @Operation(summary = "Create a new course")

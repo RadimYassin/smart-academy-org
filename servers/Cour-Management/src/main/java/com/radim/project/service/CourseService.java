@@ -32,6 +32,12 @@ public class CourseService {
         return mapToResponse(course);
     }
 
+    public List<CourseDto.Response> getCoursesByTeacherId(Long teacherId) {
+        return courseRepository.findByTeacherId(teacherId).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public CourseDto.Response createCourse(CourseDto.Request request) {
         Long teacherId = getCurrentUserId();
