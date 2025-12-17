@@ -1,0 +1,377 @@
+name: DevSecOps CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+env:
+  JAVA_VERSION: '17'
+  JAVA_DISTRIBUTION: 'temurin'
+  MAVEN_OPTS: '-Xmx3072m'
+
+jobs:
+  # ==========================================
+  # Stage 1: Build & Test
+  # ==========================================
+  build-and-test:
+    name: Build & Test Microservices
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for SonarCloud
+      
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: 'maven'
+      
+      - name: Build User Management Service
+        run: |
+          cd servers/User-Management
+          mvn clean verify -B
+      
+      - name: Build Course Management Service
+        run: |
+          cd servers/Cour-Management
+          mvn clean verify -B
+      
+      - name: Build Gateway Service
+        run: |
+          cd servers/GateWay
+          mvn clean package -DskipTests -B
+      
+      - name: Build Eureka Server
+        run: |
+          cd servers/Eureka-Server
+          mvn clean package -DskipTests -B
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            servers/*/target/*.jar
+          retention-days: 7
+
+  # ==========================================
+  # Stage 2: SAST - SonarCloud Analysis
+  # ==========================================
+  sonarcloud:
+    name: SonarCloud SAST Analysis
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for SonarCloud
+      
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: 'maven'
+      
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      
+      - name: SonarCloud Scan - User Management
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          cd servers/User-Management
+          mvn -B verify sonar:sonar \
+            -Dsonar.projectKey=smart-academy-user-management \
+            -Dsonar.organization=smart-academy-org \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.qualitygate.wait=true
+      
+      - name: SonarCloud Scan - Course Management
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          cd servers/Cour-Management
+          mvn -B verify sonar:sonar \
+            -Dsonar.projectKey=smart-academy-course-management \
+            -Dsonar.organization=smart-academy-org \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.qualitygate.wait=true
+
+  # ==========================================
+  # Stage 3: SCA - OWASP Dependency Check
+  # ==========================================
+  dependency-check:
+    name: OWASP Dependency Check (SCA)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: 'maven'
+      
+      - name: OWASP Dependency Check - User Management
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'smart-academy-user-management'
+          path: './servers/User-Management'
+          format: 'HTML,JSON'
+          args: >
+            --enableRetired
+            --enableExperimental
+            --failOnCVSS 7
+            --suppression ./servers/User-Management/dependency-check-suppressions.xml
+        continue-on-error: true
+      
+      - name: OWASP Dependency Check - Course Management
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'smart-academy-course-management'
+          path: './servers/Cour-Management'
+          format: 'HTML,JSON'
+          args: >
+            --enableRetired
+            --enableExperimental
+            --failOnCVSS 7
+        continue-on-error: true
+      
+      - name: Upload Dependency Check Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-reports
+          path: reports/
+          retention-days: 30
+
+  # ==========================================
+  # Stage 4: Build Docker Images
+  # ==========================================
+  build-docker-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [build-and-test, sonarcloud]
+    permissions:
+      contents: read
+    
+    strategy:
+      matrix:
+        service:
+          - name: user-management
+            context: ./servers/User-Management
+            image: smart-academy-user-management
+          - name: course-management
+            context: ./servers/Cour-Management
+            image: smart-academy-course-management
+          - name: gateway
+            context: ./servers/GateWay
+            image: smart-academy-gateway
+          - name: eureka-server
+            context: ./servers/Eureka-Server
+            image: smart-academy-eureka-server
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build Docker Image - ${{ matrix.service.name }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service.context }}
+          push: false
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.image }}:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.image }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+      
+      - name: Save Docker Image as Artifact
+        run: |
+          docker save ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.image }}:latest \
+            -o ${{ matrix.service.name }}.tar
+      
+      - name: Upload Docker Image Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-${{ matrix.service.name }}
+          path: ${{ matrix.service.name }}.tar
+          retention-days: 1
+
+  # ==========================================
+  # Stage 5: Container Security - Trivy Scan
+  # ==========================================
+  trivy-scan:
+    name: Trivy Container Security Scan
+    runs-on: ubuntu-latest
+    needs: build-docker-images
+    permissions:
+      contents: read
+      security-events: write
+    
+    strategy:
+      matrix:
+        service:
+          - name: user-management
+            image: smart-academy-user-management
+          - name: course-management
+            image: smart-academy-course-management
+          - name: gateway
+            image: smart-academy-gateway
+          - name: eureka-server
+            image: smart-academy-eureka-server
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+      
+      - name: Download Docker Image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-${{ matrix.service.name }}
+      
+      - name: Load Docker Image
+        run: docker load -i ${{ matrix.service.name }}.tar
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.image }}:latest
+          format: 'sarif'
+          output: 'trivy-results-${{ matrix.service.name }}.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'  # Fail on HIGH/CRITICAL
+      
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results-${{ matrix.service.name }}.sarif'
+      
+      - name: Generate Trivy HTML Report
+        uses: aquasecurity/trivy-action@master
+        if: always()
+        with:
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.image }}:latest
+          format: 'template'
+          template: '@/contrib/html.tpl'
+          output: 'trivy-report-${{ matrix.service.name }}.html'
+          severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+      
+      - name: Upload Trivy Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-report-${{ matrix.service.name }}
+          path: trivy-report-${{ matrix.service.name }}.html
+          retention-days: 30
+
+  # ==========================================
+  # Stage 6: Publish to Docker Hub
+  # ==========================================
+  publish-to-dockerhub:
+    name: Publish Images to Docker Hub
+    runs-on: ubuntu-latest
+    needs: trivy-scan
+    permissions:
+      contents: read
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    strategy:
+      matrix:
+        service:
+          - name: user-management
+            image: smart-academy-user-management
+          - name: course-management
+            image: smart-academy-course-management
+          - name: gateway
+            image: smart-academy-gateway
+          - name: eureka-server
+            image: smart-academy-eureka-server
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+      
+      - name: Download Docker Image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-${{ matrix.service.name }}
+      
+      - name: Load Docker Image
+        run: docker load -i ${{ matrix.service.name }}.tar
+      
+      - name: Tag image with commit SHA
+        run: |
+          docker tag \
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.image }}:latest \
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.image }}:${{ github.sha }}
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Push to Docker Hub - Latest
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.image }}:latest
+      
+      - name: Push to Docker Hub - Commit SHA
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.image }}:${{ github.sha }}
+      
+      - name: Logout from Docker Hub
+        if: always()
+        run: docker logout
+
+  # ==========================================
+  # Pipeline Summary
+  # ==========================================
+  pipeline-summary:
+    name: Pipeline Summary
+    runs-on: ubuntu-latest
+    needs: [build-and-test, sonarcloud, dependency-check, trivy-scan, publish-to-dockerhub]
+    if: always()
+    
+    steps:
+      - name: Pipeline Status Summary
+        run: |
+          echo "## 🔐 DevSecOps Pipeline Summary"
+          echo ""
+          echo "✅ Build & Test: ${{ needs.build-and-test.result }}"
+          echo "✅ SonarCloud SAST: ${{ needs.sonarcloud.result }}"
+          echo "✅ OWASP Dependency Check: ${{ needs.dependency-check.result }}"
+          echo "✅ Trivy Container Scan: ${{ needs.trivy-scan.result }}"
+          echo "✅ Docker Hub Publish: ${{ needs.publish-to-dockerhub.result }}"
+          echo ""
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Run Number: ${{ github.run_number }}"
+          echo "Commit SHA: ${{ github.sha }}"
