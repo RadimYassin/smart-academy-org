@@ -101,6 +101,8 @@ const PUBLIC_ENDPOINTS = [
     '/api/v1/auth/verify-email',
     '/api/v1/auth/resend-otp',
     '/api/v1/auth/refresh-token', // Refresh token endpoint doesn't use Bearer token
+    '/edubot-service/chat/ask', // EduBot chat endpoint (may not require auth)
+    '/edubot-service/health', // EduBot health check
 ];
 
 const isPublicEndpoint = (url: string | undefined): boolean => {

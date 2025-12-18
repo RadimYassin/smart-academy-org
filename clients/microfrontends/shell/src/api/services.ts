@@ -18,6 +18,7 @@ export const SERVICES = {
     STUDENT_PROFILER_SERVICE: '/studentprofiler-service',
     PATH_PREDICTOR_SERVICE: '/pathpredictor-service',
     RECO_BUILDER_SERVICE: '/recobuilder-service',
+    EDUBOT_SERVICE: '/edubot-service',
 } as const;
 
 /**
@@ -133,6 +134,12 @@ export const ENDPOINTS = {
 
         RECOMMENDATIONS: (studentId: string) =>
             `${SERVICES.RECO_BUILDER_SERVICE}/recommend/${studentId}`,
+    },
+
+    // EduBot AI Assistant Endpoints
+    EDUBOT: {
+        CHAT_ASK: `${SERVICES.EDUBOT_SERVICE}/chat/ask`,
+        HEALTH: `${SERVICES.EDUBOT_SERVICE}/health`,
     },
 } as const;
 

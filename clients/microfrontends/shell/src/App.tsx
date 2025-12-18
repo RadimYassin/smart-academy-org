@@ -9,6 +9,7 @@ import Courses from './pages/Courses';
 import CourseDetail from './pages/CourseDetail';
 import StudentCourse from './pages/StudentCourse';
 import Students from './pages/Students';
+import ChatPage from './pages/ChatPage';
 
 function App() {
   return (
@@ -55,6 +56,9 @@ function App() {
               <Route path="student/learning" element={<div className="p-8"><h1 className="text-2xl font-bold text-gray-400">My Learning - Coming Soon</h1></div>} />
               <Route path="student/wishlist" element={<div className="p-8"><h1 className="text-2xl font-bold text-gray-400">Wishlist - Coming Soon</h1></div>} />
               <Route path="student/profile" element={<div className="p-8"><h1 className="text-2xl font-bold text-gray-400">Profile - Coming Soon</h1></div>} />
+
+              {/* AI Chat - Available for all users */}
+              <Route path="chat" element={<ChatPage />} />
 
               {/* Legacy routes (for backwards compatibility) */}
               <Route path="courses" element={<Courses />} />

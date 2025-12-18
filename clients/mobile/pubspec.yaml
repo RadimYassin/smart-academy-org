@@ -1,0 +1,70 @@
+name: mobile
+description: "Overskill - Unlock your potential with us!"
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI & Icons
+  cupertino_icons: ^1.0.8
+  flutter_svg: ^2.0.10+1
+  
+  # State Management
+  get: ^4.6.6
+  
+  # Networking
+  dio: ^5.7.0
+  pretty_dio_logger: ^1.4.0
+  
+  # Local Storage
+  shared_preferences: ^2.3.2
+  get_storage: ^2.1.1
+  
+  # Dependency Injection
+  get_it: ^8.0.2
+  injectable: ^2.5.0
+  
+  # Utils
+  equatable: ^2.0.5
+  flutter_animate: ^4.5.0
+  shimmer: ^3.0.0
+  cached_network_image: ^3.4.1
+  country_picker: ^2.0.27
+  
+  # Code Generation
+  json_annotation: ^4.9.0
+  pinput: ^5.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  
+  # Code Generation
+  build_runner: ^2.4.12
+  injectable_generator: ^2.6.2
+  json_serializable: ^6.8.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/app_logo_illustration.png
+    - assets/images/google_icon.png
+    - assets/images/apple_icon.png
+    - assets/images/facebook_icon.png
+  
+  # Uncomment and add your custom fonts here when needed
+  # fonts:
+  #   - family: CustomFont
+  #     fonts:
+  #       - asset: lib/assets/fonts/CustomFont-Regular.ttf
+  #       - asset: lib/assets/fonts/CustomFont-Bold.ttf
+  #         weight: 700

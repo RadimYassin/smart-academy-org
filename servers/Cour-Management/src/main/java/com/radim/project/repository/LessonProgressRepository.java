@@ -17,6 +17,9 @@ public interface LessonProgressRepository extends JpaRepository<LessonProgress, 
 
     List<LessonProgress> findByStudentIdAndLesson_Module_Course_Id(Long studentId, UUID courseId);
 
+    @Query("SELECT lp FROM LessonProgress lp JOIN FETCH lp.lesson WHERE lp.studentId = :studentId AND lp.lesson.module.course.id = :courseId")
+    List<LessonProgress> findByStudentIdAndCourseIdWithLesson(@Param("studentId") Long studentId, @Param("courseId") UUID courseId);
+
     long countByStudentIdAndLesson_Module_Course_IdAndCompletedTrue(Long studentId, UUID courseId);
 
     @Query("SELECT COUNT(l) FROM Lesson l WHERE l.module.course.id = :courseId")

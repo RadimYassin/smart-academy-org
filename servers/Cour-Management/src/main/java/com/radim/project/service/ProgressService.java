@@ -129,8 +129,9 @@ public class ProgressService {
         }
 
         // Get all existing progress records for this course and student
+        // Use JOIN FETCH to eagerly load the lesson relationship
         List<LessonProgress> progressList = lessonProgressRepository
-                .findByStudentIdAndLesson_Module_Course_Id(studentId, courseId);
+                .findByStudentIdAndCourseIdWithLesson(studentId, courseId);
 
         // Create a map of existing progress by lesson ID
         Map<UUID, LessonProgress> progressMap = progressList.stream()
@@ -153,7 +154,8 @@ public class ProgressService {
                         .build();
                 progress = lessonProgressRepository.save(progress);
             }
-            result.add(toLessonProgressResponse(progress));
+            // Use the lesson object we already have to avoid lazy loading issues
+            result.add(toLessonProgressResponse(progress, lesson));
         }
 
         log.info("Returning {} lesson progress records for course {} and student {}", 
@@ -162,9 +164,22 @@ public class ProgressService {
     }
 
     private ProgressDto.LessonProgressResponse toLessonProgressResponse(LessonProgress progress) {
+        // This method is used when we have the progress but need to access the lesson
+        // It may cause lazy loading issues, so prefer the overloaded version with lesson parameter
+        Lesson lesson = progress.getLesson();
         return ProgressDto.LessonProgressResponse.builder()
-                .lessonId(progress.getLesson().getId())
-                .lessonTitle(progress.getLesson().getTitle())
+                .lessonId(lesson.getId())
+                .lessonTitle(lesson.getTitle())
+                .completed(progress.getCompleted())
+                .completedAt(progress.getCompletedAt())
+                .build();
+    }
+
+    private ProgressDto.LessonProgressResponse toLessonProgressResponse(LessonProgress progress, Lesson lesson) {
+        // This overloaded version accepts the lesson directly to avoid lazy loading issues
+        return ProgressDto.LessonProgressResponse.builder()
+                .lessonId(lesson.getId())
+                .lessonTitle(lesson.getTitle())
                 .completed(progress.getCompleted())
                 .completedAt(progress.getCompletedAt())
                 .build();

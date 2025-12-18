@@ -1,9 +1,11 @@
-import React from 'react';
-import { Bell, MessageSquare, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bell, MessageSquare, LogOut, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Header: React.FC = () => {
     const { user, logout } = useAuth();
+    const navigate = useNavigate();
 
     return (
         <header className="sticky top-0 z-30 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-8 py-4">
@@ -15,6 +17,22 @@ const Header: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-4">
+                    {/* AI Assistant */}
+                    <button 
+                        onClick={() => {
+                            console.log('[Header] Navigating to /chat');
+                            navigate('/chat');
+                        }}
+                        className="p-2 hover:bg-gradient-to-br hover:from-purple-50 hover:to-indigo-50 dark:hover:from-purple-900/20 dark:hover:to-indigo-900/20 rounded-lg transition-all group relative"
+                        title="AI Assistant"
+                    >
+                        <Sparkles 
+                            size={24} 
+                            className="text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" 
+                        />
+                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full animate-pulse"></span>
+                    </button>
+
                     {/* Messages */}
                     <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
                         <MessageSquare size={24} className="text-gray-600 dark:text-gray-400" />

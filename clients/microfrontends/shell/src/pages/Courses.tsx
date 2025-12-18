@@ -11,6 +11,7 @@ import {
     questionApi 
 } from '../api/courseApi';
 import { enrollmentApi } from '../api/enrollmentApi';
+import { progressApi } from '../api/progressApi';
 
 const Courses: React.FC = () => {
     const { user } = useAuth();
@@ -288,11 +289,30 @@ const Courses: React.FC = () => {
                         );
                         const courses = (await Promise.all(coursePromises)).filter(c => c !== null) as any[];
 
+                        // Fetch progress for each course
+                        const courseProgressPromises = courseIds.map(courseId =>
+                            progressApi.getCourseProgress(courseId).catch(err => {
+                                console.warn(`[Shell Courses] Failed to fetch progress for course ${courseId}:`, err);
+                                return null;
+                            })
+                        );
+                        const courseProgresses = await Promise.all(courseProgressPromises);
+                        
+                        // Create a map of course progress by courseId
+                        const progressMap: Record<string, any> = {};
+                        courseProgresses.forEach((progress, index) => {
+                            if (progress) {
+                                progressMap[courseIds[index]] = progress;
+                            }
+                        });
+
                         console.log('[Shell Courses] Courses loaded:', courses);
+                        console.log('[Shell Courses] Course progress loaded:', progressMap);
                         iframe.contentWindow.postMessage({
                             type: 'MY_COURSES_LOADED',
                             enrollments,
-                            courses
+                            courses,
+                            courseProgress: progressMap
                         }, '*');
                     } catch (error: any) {
                         console.error('[Shell Courses] Error fetching student courses:', error);
@@ -313,6 +333,19 @@ const Courses: React.FC = () => {
                 if (event.data.type === 'OPEN_STUDENT_COURSE') {
                     console.log('[Shell Courses] Opening student course view:', event.data.courseId);
                     navigate(`/student/courses/${event.data.courseId}`);
+                }
+
+                // Fetch student info
+                if (event.data.type === 'FETCH_STUDENT_INFO') {
+                    console.log('[Shell Courses] Fetching student info');
+                    if (user) {
+                        iframe.contentWindow.postMessage({
+                            type: 'STUDENT_INFO_LOADED',
+                            firstName: user.name?.split(' ')[0] || '',
+                            lastName: user.name?.split(' ').slice(1).join(' ') || '',
+                            email: user.email || ''
+                        }, '*');
+                    }
                 }
             } catch (error) {
                 console.error('[Shell Courses] Unexpected error:', error);

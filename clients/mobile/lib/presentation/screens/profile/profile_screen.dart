@@ -1,0 +1,573 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:get/get.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_strings.dart';
+import '../../controllers/profile_controller.dart';
+
+class ProfileScreen extends GetView<ProfileController> {
+  const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      backgroundColor: isDarkMode ? AppColors.primary : AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // --- Custom Header (Replaces AppBar) ---
+              _buildHeader(context, theme, isDarkMode)
+                  .animate()
+                  .fadeIn(duration: 400.ms, delay: 100.ms)
+                  .slideY(begin: -0.1, end: 0, duration: 400.ms, delay: 100.ms),
+
+              // --- User Info Card ---
+              _buildUserInfoCard(context, theme, isDarkMode)
+                  .animate()
+                  .fadeIn(duration: 400.ms, delay: 200.ms)
+                  .scale(delay: 200.ms),
+              const SizedBox(height: 16),
+
+              // --- Stats Cards ---
+              _buildStatsCards(context, theme, isDarkMode)
+                  .animate()
+                  .fadeIn(duration: 500.ms, delay: 300.ms)
+                  .slideX(begin: -0.1, end: 0, duration: 500.ms, delay: 300.ms),
+              const SizedBox(height: 16),
+
+              // --- Interests Card ---
+              _buildInterestsCard(context, theme, isDarkMode)
+                  .animate()
+                  .fadeIn(duration: 500.ms, delay: 400.ms)
+                  .scale(delay: 400.ms),
+              const SizedBox(height: 16),
+
+              // --- Activity/Goals Tabs ---
+              _buildActivityTabs(context, theme, isDarkMode)
+                  .animate()
+                  .fadeIn(duration: 500.ms, delay: 500.ms)
+                  .slideY(begin: 0.1, end: 0, duration: 500.ms, delay: 500.ms),
+              const SizedBox(height: 16),
+
+              // --- Settings List ---
+              _buildSettingsList(context, theme, isDarkMode)
+                  .animate()
+                  .fadeIn(duration: 600.ms, delay: 600.ms)
+                  .slideY(begin: 0.1, end: 0, duration: 600.ms, delay: 600.ms),
+
+              const SizedBox(height: 48), // Bottom padding for nav bar
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- Header ---
+  Widget _buildHeader(BuildContext context, ThemeData theme, bool isDarkMode) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            AppStrings.profile,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: isDarkMode ? AppColors.white : AppColors.black,
+            ),
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.more_vert,
+              color: isDarkMode ? AppColors.white : AppColors.black,
+            ),
+            onPressed: () {},
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- User Info ---
+  Widget _buildUserInfoCard(BuildContext context, ThemeData theme, bool isDarkMode) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Card(
+        color: isDarkMode ? AppColors.primaryDark : AppColors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: isDarkMode
+                ? AppColors.border.withValues(alpha: 0.2)
+                : AppColors.border,
+            width: 1,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: AppColors.onboardingContinue.withValues(alpha: 0.2),
+                child: Icon(
+                  Icons.person,
+                  size: 32,
+                  color: AppColors.onboardingContinue,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.jasonMark,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? AppColors.white : AppColors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      AppStrings.jasonMarkEmail,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      AppStrings.userInterests,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.settings_outlined,
+                  color: isDarkMode ? AppColors.white : AppColors.black,
+                ),
+                onPressed: () {},
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- Stats ---
+  Widget _buildStatsCards(BuildContext context, ThemeData theme, bool isDarkMode) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Card(
+              color: AppColors.success.withValues(alpha: 0.15),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: isDarkMode
+                      ? AppColors.border.withValues(alpha: 0.2)
+                      : AppColors.border,
+                  width: 1,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Text(
+                      '11',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.success,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      AppStrings.courseCompleted,
+                      style: TextStyle(
+                        color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Card(
+              color: AppColors.warning.withValues(alpha: 0.15),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: isDarkMode
+                      ? AppColors.border.withValues(alpha: 0.2)
+                      : AppColors.border,
+                  width: 1,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Text(
+                      '4',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.warning,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      AppStrings.daysStreak,
+                      style: TextStyle(
+                        color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- Interests ---
+  Widget _buildInterestsCard(BuildContext context, ThemeData theme, bool isDarkMode) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Card(
+        color: isDarkMode ? AppColors.primaryDark : AppColors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: isDarkMode
+                ? AppColors.border.withValues(alpha: 0.2)
+                : AppColors.border,
+            width: 1,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildInterestChip(AppStrings.uxDesign, isDarkMode)
+                      .animate()
+                      .fadeIn(duration: 300.ms, delay: 500.ms),
+                  _buildInterestChip(AppStrings.finance, isDarkMode)
+                      .animate()
+                      .fadeIn(duration: 300.ms, delay: 600.ms),
+                  _buildInterestChip(AppStrings.design, isDarkMode)
+                      .animate()
+                      .fadeIn(duration: 300.ms, delay: 700.ms),
+                  _buildInterestChip(AppStrings.website, isDarkMode)
+                      .animate()
+                      .fadeIn(duration: 300.ms, delay: 800.ms),
+                ],
+              ),
+              const SizedBox(height: 16),
+              LinearProgressIndicator(
+                value: 0.75,
+                backgroundColor: isDarkMode
+                    ? AppColors.primaryLight
+                    : AppColors.progressInactive,
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.onboardingContinue),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInterestChip(String label, bool isDarkMode) {
+    return Chip(
+      label: Text(label),
+      backgroundColor: isDarkMode
+          ? AppColors.onboardingContinue.withValues(alpha: 0.2)
+          : AppColors.background,
+      labelStyle: TextStyle(
+        color: isDarkMode ? AppColors.white : AppColors.black,
+        fontSize: 14,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+    );
+  }
+
+  // --- Activity Tabs ---
+  Widget _buildActivityTabs(BuildContext context, ThemeData theme, bool isDarkMode) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Card(
+        color: isDarkMode ? AppColors.primaryDark : AppColors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: isDarkMode
+                ? AppColors.border.withValues(alpha: 0.2)
+                : AppColors.border,
+            width: 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            TabBar(
+              controller: controller.tabController,
+              tabs: controller.activityTabs,
+              labelColor: AppColors.onboardingContinue,
+              unselectedLabelColor: isDarkMode ? AppColors.greyLight : AppColors.grey,
+              indicatorColor: AppColors.onboardingContinue,
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+            SizedBox(
+              height: 200,
+              child: TabBarView(
+                controller: controller.tabController,
+                children: [
+                  // --- Recent Tab ---
+                  ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      _buildRecentCourseItem(theme, isDarkMode)
+                          .animate()
+                          .fadeIn(duration: 300.ms, delay: 900.ms),
+                      const SizedBox(height: 8),
+                      _buildRecentCourseItem(theme, isDarkMode)
+                          .animate()
+                          .fadeIn(duration: 300.ms, delay: 1000.ms),
+                    ],
+                  ),
+                  // --- Goals Tab ---
+                  Center(
+                    child: Text(
+                      AppStrings.goalsContent,
+                      style: TextStyle(
+                        color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                      ),
+                    ),
+                  ),
+                  // --- Activity Tab ---
+                  Center(
+                    child: Text(
+                      AppStrings.activityContent,
+                      style: TextStyle(
+                        color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentCourseItem(ThemeData theme, bool isDarkMode) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDarkMode ? AppColors.primary : AppColors.background,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: AppColors.greyLight.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.laptop,
+              color: AppColors.grey,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.design,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.success,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  AppStrings.masterDigitalProductDesignUx,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? AppColors.white : AppColors.black,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: LinearProgressIndicator(
+                        value: 0.75,
+                        backgroundColor: isDarkMode
+                            ? AppColors.primaryLight
+                            : AppColors.progressInactive,
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.onboardingContinue),
+                        borderRadius: BorderRadius.circular(2),
+                        minHeight: 4,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '75% ${AppStrings.completed}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- Settings List ---
+  Widget _buildSettingsList(BuildContext context, ThemeData theme, bool isDarkMode) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Card(
+        color: isDarkMode ? AppColors.primaryDark : AppColors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: isDarkMode
+                ? AppColors.border.withValues(alpha: 0.2)
+                : AppColors.border,
+            width: 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            _buildSettingsTile(context, theme, isDarkMode, AppStrings.personalDetails, Icons.person_outline, () {}),
+            _buildSettingsTile(context, theme, isDarkMode, AppStrings.preferenceVideo, Icons.video_settings_outlined, () {}),
+            _buildSettingsTile(context, theme, isDarkMode, AppStrings.yourDownload, Icons.download_outlined, () {}),
+            Obx(() {
+              return SwitchListTile(
+                title: Text(
+                  AppStrings.darkMode,
+                  style: TextStyle(
+                    color: isDarkMode ? AppColors.white : AppColors.black,
+                  ),
+                ),
+                secondary: Icon(
+                  Icons.dark_mode_outlined,
+                  color: isDarkMode ? AppColors.white : AppColors.black,
+                ),
+                value: controller.isDarkMode.value,
+                onChanged: controller.toggleDarkMode,
+                activeThumbColor: AppColors.onboardingContinue,
+              );
+            }),
+            Divider(
+              color: isDarkMode
+                  ? AppColors.border.withValues(alpha: 0.2)
+                  : AppColors.border,
+            ),
+            _buildSettingsTile(context, theme, isDarkMode, AppStrings.referralCode, Icons.card_giftcard_outlined, () {}),
+            _buildSettingsTile(context, theme, isDarkMode, AppStrings.learningReminder, Icons.schedule_outlined, () {}),
+            _buildSettingsTile(context, theme, isDarkMode, AppStrings.voucherCode, Icons.airplane_ticket_outlined, () {}),
+            Divider(
+              color: isDarkMode
+                  ? AppColors.border.withValues(alpha: 0.2)
+                  : AppColors.border,
+            ),
+            _buildSettingsTile(context, theme, isDarkMode, AppStrings.investerAcademy, Icons.school_outlined, () {}),
+            _buildSettingsTile(context, theme, isDarkMode, AppStrings.faqs, Icons.quiz_outlined, () {}),
+            _buildSettingsTile(context, theme, isDarkMode, AppStrings.helpCenter, Icons.help_outline, () {}),
+            Divider(
+              color: isDarkMode
+                  ? AppColors.border.withValues(alpha: 0.2)
+                  : AppColors.border,
+            ),
+            _buildSettingsTile(context, theme, isDarkMode, AppStrings.language, Icons.language_outlined, () {}),
+            _buildSettingsTile(context, theme, isDarkMode, AppStrings.privacy, Icons.privacy_tip_outlined, () {}),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsTile(
+    BuildContext context,
+    ThemeData theme,
+    bool isDarkMode,
+    String title,
+    IconData icon,
+    VoidCallback onTap,
+  ) {
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: isDarkMode ? AppColors.white : AppColors.black,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isDarkMode ? AppColors.white : AppColors.black,
+        ),
+      ),
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+        color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+      ),
+      onTap: onTap,
+    );
+  }
+}

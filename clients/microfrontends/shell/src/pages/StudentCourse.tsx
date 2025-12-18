@@ -186,7 +186,7 @@ const StudentCourse: React.FC = () => {
         window.addEventListener('message', handleMessage);
 
         // Send course data and trigger content load after iframe loads
-        const timer = setTimeout(() => {
+        const timer = setTimeout(async () => {
             const iframe = document.querySelector('iframe[src*="5004"]') as HTMLIFrameElement;
             if (iframe && iframe.contentWindow && course && courseId) {
                 // Send course data to open student view
@@ -195,6 +195,24 @@ const StudentCourse: React.FC = () => {
                     courseId: courseId,
                     course: course
                 }, '*');
+
+                // Also fetch and send course progress immediately
+                try {
+                    const courseProgress = await progressApi.getCourseProgress(courseId);
+                    const allLessonProgress = await progressApi.getAllLessonProgressForCourse(courseId);
+                    const completedLessons = allLessonProgress
+                        .filter(lp => lp.completed)
+                        .map(lp => lp.lessonId);
+
+                    iframe.contentWindow.postMessage({
+                        type: 'COURSE_PROGRESS_LOADED',
+                        completedLessons,
+                        allLessonProgress,
+                        progress: courseProgress
+                    }, '*');
+                } catch (err) {
+                    console.warn('[Shell StudentCourse] Failed to fetch initial progress:', err);
+                }
             }
         }, 300);
 

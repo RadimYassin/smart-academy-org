@@ -48,7 +48,7 @@ const Sidebar: React.FC = () => {
     const NavContent = () => (
         <>
             {/* Logo Section */}
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-6 border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 bg-gradient-to-br ${role === 'STUDENT'
                         ? 'from-[#5B4FE9] to-[#7C3AED]'
