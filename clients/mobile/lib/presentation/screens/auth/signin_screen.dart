@@ -125,30 +125,34 @@ class SignInScreen extends GetView<SignInController> {
   }
 
   Widget _buildEmailTab(BuildContext context, bool isDarkMode) {
-    return Column(
-      children: [
-        // Email Field
-        TextField(
-          controller: controller.emailController,
-          keyboardType: TextInputType.emailAddress,
-          decoration: InputDecoration(
-            hintText: AppStrings.yourEmail,
-            prefixIcon: Icon(
-              Icons.email_outlined,
-              color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+    return Form(
+      key: controller.formKey,
+      child: Column(
+        children: [
+          // Email Field
+          TextFormField(
+            controller: controller.emailController,
+            keyboardType: TextInputType.emailAddress,
+            validator: controller.validateEmail,
+            decoration: InputDecoration(
+              hintText: AppStrings.yourEmail,
+              prefixIcon: Icon(
+                Icons.email_outlined,
+                color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+              ),
             ),
-          ),
-        )
-            .animate()
-            .fadeIn(duration: 500.ms, delay: 700.ms)
-            .slideY(begin: 0.1, end: 0, duration: 500.ms, delay: 700.ms),
-        const SizedBox(height: 16),
-        // Password Field
-        _buildPasswordField(context, isDarkMode),
-        const SizedBox(height: 16),
-        // Forgot Password Link
-        _buildForgotPasswordLink(context, isDarkMode),
-      ],
+          )
+              .animate()
+              .fadeIn(duration: 500.ms, delay: 700.ms)
+              .slideY(begin: 0.1, end: 0, duration: 500.ms, delay: 700.ms),
+          const SizedBox(height: 16),
+          // Password Field
+          _buildPasswordField(context, isDarkMode),
+          const SizedBox(height: 16),
+          // Forgot Password Link
+          _buildForgotPasswordLink(context, isDarkMode),
+        ],
+      ),
     );
   }
 
@@ -179,9 +183,10 @@ class SignInScreen extends GetView<SignInController> {
 
   Widget _buildPasswordField(BuildContext context, bool isDarkMode) {
     return Obx(
-      () => TextField(
+      () => TextFormField(
         controller: controller.passwordController,
         obscureText: controller.isPasswordHidden.value,
+        validator: controller.validatePassword,
         decoration: InputDecoration(
           hintText: AppStrings.yourPassword,
           prefixIcon: Icon(
@@ -230,25 +235,37 @@ class SignInScreen extends GetView<SignInController> {
   }
 
   Widget _buildSignInButton(BuildContext context, bool isDarkMode) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: controller.signIn,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.onboardingContinue,
-          foregroundColor: AppColors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
+    return Obx(
+      () => SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: controller.isLoading.value ? null : controller.signIn,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.onboardingContinue,
+            foregroundColor: AppColors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
+            elevation: 0,
+            disabledBackgroundColor: AppColors.onboardingContinue.withOpacity(0.6),
           ),
-          elevation: 0,
-        ),
-        child: Text(
-          AppStrings.signIn,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          child: controller.isLoading.value
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
+                  ),
+                )
+              : Text(
+                  AppStrings.signIn,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
         ),
       ),
     )

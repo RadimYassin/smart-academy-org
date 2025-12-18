@@ -78,6 +78,10 @@ public class AuthService {
                                 .accessToken(jwtToken)
                                 .refreshToken(refreshToken.getToken())
                                 .isVerified(false)
+                                .email(savedUser.getEmail())
+                                .firstName(savedUser.getFirstName())
+                                .lastName(savedUser.getLastName())
+                                .role(savedUser.getRole().name())
                                 .build();
         }
 
@@ -115,6 +119,10 @@ public class AuthService {
                                 .accessToken(jwtToken)
                                 .refreshToken(refreshToken.getToken())
                                 .isVerified(true)
+                                .email(user.getEmail())
+                                .firstName(user.getFirstName())
+                                .lastName(user.getLastName())
+                                .role(user.getRole().name())
                                 .build();
         }
 
@@ -139,6 +147,11 @@ public class AuthService {
                                         return AuthResponse.builder()
                                                         .accessToken(accessToken)
                                                         .refreshToken(requestRefreshToken)
+                                                        .email(user.getEmail())
+                                                        .firstName(user.getFirstName())
+                                                        .lastName(user.getLastName())
+                                                        .role(user.getRole().name())
+                                                        .isVerified(user.getIsVerified())
                                                         .build();
                                 }).orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
         }

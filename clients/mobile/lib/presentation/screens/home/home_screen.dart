@@ -4,8 +4,9 @@ import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../routes/app_routes.dart';
+import '../../controllers/home_controller.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends GetView<HomeController> {
   const HomeScreen({super.key});
 
   @override
@@ -86,12 +87,22 @@ class HomeScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      AppStrings.welcomeJason,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: AppColors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Obx(
+                      () => controller.isLoading.value
+                          ? Text(
+                              'Welcome...',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                color: AppColors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          : Text(
+                              controller.getWelcomeMessage(),
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                color: AppColors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     )
                         .animate()
                         .fadeIn(duration: 400.ms, delay: 100.ms)

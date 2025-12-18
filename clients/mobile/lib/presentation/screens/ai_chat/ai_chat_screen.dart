@@ -15,15 +15,10 @@ class AiChatScreen extends GetView<AiChatController> {
     return Scaffold(
       backgroundColor: isDarkMode ? AppColors.primary : AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: isDarkMode ? AppColors.primaryDark : AppColors.primary,
+        foregroundColor: AppColors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: isDarkMode ? AppColors.white : AppColors.black,
-          ),
-          onPressed: () => Get.back(),
-        ),
+        automaticallyImplyLeading: false,
         title: Row(
           children: [
             Container(
@@ -42,7 +37,7 @@ class AiChatScreen extends GetView<AiChatController> {
             Text(
               AppStrings.aiAssistant,
               style: TextStyle(
-                color: isDarkMode ? AppColors.white : AppColors.black,
+                color: AppColors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),

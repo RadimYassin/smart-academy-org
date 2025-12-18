@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:country_picker/country_picker.dart';
+import '../../../core/utils/logger.dart';
 import '../../routes/app_routes.dart';
 
 class SignUpController extends GetxController {
@@ -66,12 +68,29 @@ class SignUpController extends GetxController {
   }
 
   // Called from Step 2 (PhoneNumberScreen)
-  void sendVerificationCode() {
+  void sendVerificationCode() async {
     // if (step2FormKey.currentState!.validate()) {
     // TODO: Implement API call to send code
     // }
-    // On successful verification, navigate to dashboard
-    Get.offAllNamed(AppRoutes.dashboard);
+    // On successful verification, navigate based on role
+    await _navigateBasedOnRole();
+  }
+
+  /// Navigate based on user role from storage
+  Future<void> _navigateBasedOnRole() async {
+    try {
+      final storage = Get.find<GetStorage>();
+      final userRole = storage.read<String>('user_role') ?? 'STUDENT';
+      
+      if (userRole.toUpperCase() == 'TEACHER') {
+        Get.offAllNamed(AppRoutes.teacherDashboard);
+      } else {
+        Get.offAllNamed(AppRoutes.studentHome);
+      }
+    } catch (e) {
+      // Default to student home on error
+      Get.offAllNamed(AppRoutes.studentHome);
+    }
   }
 
   // Called from "Sign in" link

@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/utils/logger.dart';
+import '../../../data/models/course/course.dart';
+import '../../../domain/repositories/course_repository.dart';
 import '../screens/explore/widgets/filter_sheet.dart';
 
 class ExploreController extends GetxController {
+  // Repositories
+  late final CourseRepository _courseRepository;
+
   // Search text controller
   final searchController = TextEditingController();
 
@@ -15,6 +21,12 @@ class ExploreController extends GetxController {
   // Observable to track view mode (list or grid)
   final isGridView = false.obs;
 
+  // Courses data
+  final courses = <Course>[].obs;
+  final filteredCourses = <Course>[].obs;
+  final isLoading = false.obs;
+  final errorMessage = ''.obs;
+
   // Filter state
   final selectedLevels = <String>[].obs;
   final selectedTopics = <String>[].obs;
@@ -23,6 +35,11 @@ class ExploreController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _courseRepository = Get.find<CourseRepository>();
+    
+    // Load all courses initially
+    loadAllCourses();
+    
     // Listen to changes in the search text field
     searchController.addListener(() {
       final query = searchController.text;
@@ -31,11 +48,11 @@ class ExploreController extends GetxController {
       // If the query is not empty, we are searching
       if (query.isNotEmpty) {
         isSearching.value = true;
-        // TODO: Call a use case to fetch search results
-        // e.g., searchUseCase(query);
+        _applyFilters();
       } else {
         // If query is empty, show default view
         isSearching.value = false;
+        _applyFilters();
       }
     });
   }
@@ -76,8 +93,58 @@ class ExploreController extends GetxController {
     selectedRating.value = rating;
   }
 
+  /// Load all courses
+  Future<void> loadAllCourses() async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+      
+      final data = await _courseRepository.getAllCourses();
+      courses.value = data;
+      _applyFilters();
+      
+      Logger.logInfo('Loaded ${data.length} courses for explore');
+    } catch (e) {
+      Logger.logError('Load courses error', error: e);
+      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Apply filters and search
+  void _applyFilters() {
+    var filtered = courses.toList();
+
+    // Search filter
+    if (searchQuery.value.trim().isNotEmpty) {
+      final query = searchQuery.value.toLowerCase();
+      filtered = filtered.where((course) {
+        return course.title.toLowerCase().contains(query) ||
+               course.description.toLowerCase().contains(query) ||
+               course.category.toLowerCase().contains(query);
+      }).toList();
+    }
+
+    // Level filter
+    if (selectedLevels.isNotEmpty) {
+      filtered = filtered.where((course) => 
+        selectedLevels.contains(course.level)
+      ).toList();
+    }
+
+    // Category filter
+    if (selectedTopics.isNotEmpty) {
+      filtered = filtered.where((course) => 
+        selectedTopics.contains(course.category)
+      ).toList();
+    }
+
+    filteredCourses.assignAll(filtered);
+  }
+
   void applyFilters() {
-    // TODO: Re-run the search with the new filters
+    _applyFilters();
     Get.back(); // Close the bottom sheet
   }
 

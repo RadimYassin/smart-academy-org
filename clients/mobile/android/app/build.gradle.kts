@@ -36,6 +36,25 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
+        debug {
+            // Optimize debug builds for faster compilation
+            isMinifyEnabled = false
+            isShrinkResources = false
+            // Use multiDex only if needed
+            multiDexEnabled = true
+        }
+    }
+    
+    // Enable build cache
+    buildFeatures {
+        buildConfig = true
+    }
+    
+    // Packaging options to speed up builds
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
     }
 }
 

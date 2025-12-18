@@ -620,35 +620,171 @@ class ExploreScreen extends GetView<ExploreController> {
 
   // --- Results List (Panel 1) ---
   Widget _buildResultsList(BuildContext context, ThemeData theme, bool isDarkMode) {
-    final courseList = [
-      {
-        'title': AppStrings.userExperienceDesignEssentials,
-        'category': AppStrings.uxDesign,
-        'price': '\$89.00',
-        'rating': '4.8 (31,882)',
-      },
-      {
-        'title': AppStrings.masterDigitalProductDesign,
-        'category': AppStrings.design,
-        'price': '\$120.00',
-        'rating': '4.9 (25,000)',
-      },
-      {
-        'title': AppStrings.investmentBankingCourse,
-        'category': AppStrings.finance,
-        'price': '\$150.00',
-        'rating': '4.7 (18,500)',
-      },
-    ];
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8),
-      itemCount: courseList.length,
-      itemBuilder: (context, index) {
-        final course = courseList[index];
-        return _buildListCard(context, course, isDarkMode, index);
-      },
+      if (controller.errorMessage.value.isNotEmpty) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Error: ${controller.errorMessage.value}',
+                  style: TextStyle(
+                    color: isDarkMode ? AppColors.white : AppColors.black,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => controller.loadAllCourses(),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      if (controller.filteredCourses.isEmpty) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Text(
+              'No courses found',
+              style: TextStyle(
+                color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+              ),
+            ),
+          ),
+        );
+      }
+
+      return ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8),
+        itemCount: controller.filteredCourses.length,
+        itemBuilder: (context, index) {
+          final course = controller.filteredCourses[index];
+          return _buildListCardFromCourse(context, course, isDarkMode, index);
+        },
+      );
+    });
+  }
+
+  Widget _buildListCardFromCourse(BuildContext context, course, bool isDarkMode, int index) {
+    return InkWell(
+      onTap: () => Get.toNamed('/course-details', arguments: course.id),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDarkMode ? AppColors.primaryDark : AppColors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Course thumbnail
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.onboardingContinue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: course.thumbnailUrl.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        course.thumbnailUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.book, size: 32);
+                        },
+                      ),
+                    )
+                  : const Icon(Icons.book, size: 32),
+            ),
+            const SizedBox(width: 16),
+            // Course info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    course.title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? AppColors.white : AppColors.black,
+                        ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    course.category,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _getLevelColor(course.level).withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          course.level,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: _getLevelColor(course.level),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
+  }
+
+  Color _getLevelColor(String level) {
+    switch (level) {
+      case 'BEGINNER':
+        return Colors.green;
+      case 'INTERMEDIATE':
+        return Colors.orange;
+      case 'ADVANCED':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
   }
 
   Widget _buildListCard(BuildContext context, Map<String, String> course, bool isDarkMode, int index) {

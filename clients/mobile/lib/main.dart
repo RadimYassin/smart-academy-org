@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'core/config/app_config.dart';
 import 'core/config/app_config.dart' as config;
+import 'core/config/dependency_injection.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/logger.dart';
 import 'presentation/routes/app_routes.dart';
@@ -12,8 +12,8 @@ void main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize GetStorage for local storage
-  await GetStorage.init();
+  // Initialize dependency injection
+  await DependencyInjection.init();
 
   // Initialize app configuration
   _initializeAppConfig();

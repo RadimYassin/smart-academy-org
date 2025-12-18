@@ -125,39 +125,70 @@ class ProfileScreen extends GetView<ProfileController> {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppStrings.jasonMark,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: isDarkMode ? AppColors.white : AppColors.black,
+                child: Obx(() {
+                  if (controller.isLoading.value && controller.user.value == null) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  
+                  final user = controller.user.value;
+                  if (user == null) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Loading...',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode ? AppColors.white : AppColors.black,
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        user.fullName,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? AppColors.white : AppColors.black,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      AppStrings.jasonMarkEmail,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                      const SizedBox(height: 4),
+                      Text(
+                        user.email,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      AppStrings.userInterests,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.onboardingContinue.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          user.role.toUpperCase(),
+                          style: TextStyle(
+                            color: AppColors.onboardingContinue,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  );
+                }),
               ),
               IconButton(
                 icon: Icon(
-                  Icons.settings_outlined,
+                  Icons.edit_outlined,
                   color: isDarkMode ? AppColors.white : AppColors.black,
                 ),
-                onPressed: () {},
+                onPressed: () => _showEditProfileDialog(context, theme, isDarkMode),
               ),
             ],
           ),
@@ -189,13 +220,13 @@ class ProfileScreen extends GetView<ProfileController> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    Text(
-                      '11',
+                    Obx(() => Text(
+                      '${controller.completedCoursesCount.value}',
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColors.success,
                       ),
-                    ),
+                    )),
                     const SizedBox(height: 4),
                     Text(
                       AppStrings.courseCompleted,
@@ -227,16 +258,16 @@ class ProfileScreen extends GetView<ProfileController> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    Text(
-                      '4',
+                    Obx(() => Text(
+                      '${controller.enrolledCoursesCount.value}',
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColors.warning,
                       ),
-                    ),
+                    )),
                     const SizedBox(height: 4),
                     Text(
-                      AppStrings.daysStreak,
+                      'Enrolled Courses',
                       style: TextStyle(
                         color: isDarkMode ? AppColors.greyLight : AppColors.grey,
                         fontSize: 14,
@@ -291,14 +322,14 @@ class ProfileScreen extends GetView<ProfileController> {
                 ],
               ),
               const SizedBox(height: 16),
-              LinearProgressIndicator(
-                value: 0.75,
+              Obx(() => LinearProgressIndicator(
+                value: controller.totalProgress.value / 100,
                 backgroundColor: isDarkMode
                     ? AppColors.primaryLight
                     : AppColors.progressInactive,
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.onboardingContinue),
                 borderRadius: BorderRadius.circular(4),
-              ),
+              )),
             ],
           ),
         ),
@@ -568,6 +599,114 @@ class ProfileScreen extends GetView<ProfileController> {
         color: isDarkMode ? AppColors.greyLight : AppColors.grey,
       ),
       onTap: onTap,
+    );
+  }
+
+  // --- Edit Profile Dialog ---
+  void _showEditProfileDialog(BuildContext context, ThemeData theme, bool isDarkMode) {
+    final controller = Get.find<ProfileController>();
+    final user = controller.user.value;
+    
+    if (user == null) return;
+
+    final firstNameController = TextEditingController(text: user.firstName);
+    final lastNameController = TextEditingController(text: user.lastName);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDarkMode ? AppColors.primaryDark : AppColors.white,
+        title: Text(
+          'Edit Profile',
+          style: TextStyle(
+            color: isDarkMode ? AppColors.white : AppColors.black,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: firstNameController,
+              decoration: InputDecoration(
+                labelText: 'First Name',
+                labelStyle: TextStyle(
+                  color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: isDarkMode ? AppColors.border.withValues(alpha: 0.2) : AppColors.border,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.onboardingContinue),
+                ),
+              ),
+              style: TextStyle(
+                color: isDarkMode ? AppColors.white : AppColors.black,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: lastNameController,
+              decoration: InputDecoration(
+                labelText: 'Last Name',
+                labelStyle: TextStyle(
+                  color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: isDarkMode ? AppColors.border.withValues(alpha: 0.2) : AppColors.border,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.onboardingContinue),
+                ),
+              ),
+              style: TextStyle(
+                color: isDarkMode ? AppColors.white : AppColors.black,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+              ),
+            ),
+          ),
+          Obx(() => ElevatedButton(
+            onPressed: controller.isLoading.value
+                ? null
+                : () async {
+                    await controller.updateProfile(
+                      firstNameController.text.trim(),
+                      lastNameController.text.trim(),
+                    );
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.onboardingContinue,
+              foregroundColor: AppColors.white,
+            ),
+            child: controller.isLoading.value
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
+                    ),
+                  )
+                : const Text('Save'),
+          )),
+        ],
+      ),
     );
   }
 }
