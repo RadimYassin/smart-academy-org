@@ -34,6 +34,7 @@ public class AuthService {
         private final RefreshTokenRepository refreshTokenRepository;
         private final EmailService emailService;
         private final radim.ma.service.OTPService otpService;
+        private final CreditService creditService;
 
         public AuthResponse register(RegisterRequest request) {
                 if (userRepository.existsByEmail(request.getEmail())) {
@@ -55,6 +56,9 @@ public class AuthService {
                 user.setVerificationCodeExpiry(otpService.generateExpiryTime());
 
                 var savedUser = userRepository.save(user);
+
+                // Initialize credit account with zero balance
+                creditService.initializeCreditAccount(savedUser.getId());
 
                 // Send verification email with OTP
                 emailService.sendVerificationEmail(
