@@ -1,0 +1,43 @@
+# ======================================
+# EduBot - Fixed Requirements
+# Compatible with Pydantic v2
+# ======================================
+
+# API Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# LangChain Ecosystem (Compatible versions)
+langchain==0.2.11
+langchain-community==0.2.10
+langchain-openai==0.1.17
+langchain-core==0.2.23
+
+# Vector Store & Embeddings
+faiss-cpu==1.8.0
+sentence-transformers==2.5.1
+
+# PDF Processing
+pypdf==3.17.4
+PyPDF2==3.0.1
+
+# Object Storage (MinIO)
+minio==7.2.3
+
+# Configuration & Validation
+python-dotenv==1.0.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Utilities
+requests==2.31.0
+tenacity==8.2.3
+
+# Additional dependencies for compatibility
+langsmith>=0.1.0
+numpy<2.0.0
+tiktoken>=0.5.0
+
+# Optional: Ollama support
+# ollama==0.1.6

@@ -170,6 +170,85 @@ services:
       - smart-academy-network
     restart: on-failure
 
+  # MinIO Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: minio-storage
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - smart-academy-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    restart: on-failure
+
+  # Chatbot-edu Service
+  chatbot-edu:
+    build:
+      context: ./Chatbot-edu
+      dockerfile: Dockerfile
+    container_name: chatbot-edu-service
+    ports:
+      - "8005:8005"
+    environment:
+      # Eureka Configuration
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+      EUREKA_INSTANCE_HOSTNAME: chatbot-edu-service
+      SERVICE_PORT: 8005
+
+      # JWT Configuration
+      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+
+      # MinIO Configuration
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET_NAME: course-materials
+      MINIO_SECURE: false
+
+      # LLM Provider Configuration
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      OPENAI_TEMPERATURE: ${OPENAI_TEMPERATURE:-0.7}
+
+      # Ollama Configuration (optional)
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama2}
+
+      # Gemini Configuration (optional)
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
+
+      # FAISS Configuration
+      FAISS_INDEX_PATH: /app/faiss_index
+      CHUNK_SIZE: ${CHUNK_SIZE:-1000}
+      CHUNK_OVERLAP: ${CHUNK_OVERLAP:-200}
+      RETRIEVAL_TOP_K: ${RETRIEVAL_TOP_K:-4}
+
+    depends_on:
+      eureka-server:
+        condition: service_started
+      minio:
+        condition: service_healthy
+    networks:
+      - smart-academy-network
+    volumes:
+      - chatbot-faiss:/app/faiss_index
+      - chatbot-courses:/app/Cours
+      - chatbot-temp:/app/temp_pdfs
+    restart: on-failure
+
 networks:
   smart-academy-network:
     driver: bridge
@@ -178,3 +257,7 @@ volumes:
   user-db-data:
   course-db-data:
   lms-db-data:
+  minio-data:
+  chatbot-faiss:
+  chatbot-courses:
+  chatbot-temp:
