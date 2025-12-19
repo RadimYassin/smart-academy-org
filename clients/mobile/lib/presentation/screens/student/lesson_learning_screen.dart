@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-// import 'package:url_launcher/url_launcher.dart'; // Uncomment if package is added
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/course/lesson.dart';
 import '../../../data/models/course/lesson_content.dart';
@@ -34,7 +34,10 @@ class _LessonLearningScreenState extends State<LessonLearningScreen> {
   void initState() {
     super.initState();
     _currentContentIndex = widget.initialContentIndex ?? 0;
-    _loadLessonContent();
+    // Defer loading until after the build phase to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadLessonContent();
+    });
   }
 
   void _loadLessonContent() {
@@ -709,8 +712,12 @@ class _LessonLearningScreenState extends State<LessonLearningScreen> {
   }
 
   Widget _buildVideoPlayer(String videoUrl) {
-    // For Flutter web/mobile, you'd use video_player package
-    // For now, show a placeholder with link
+    // Automatically open video URL in browser/app
+    // Also provide a button for manual opening
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _launchUrl(videoUrl);
+    });
+    
     return Container(
       color: Colors.black,
       child: Center(
@@ -719,6 +726,11 @@ class _LessonLearningScreenState extends State<LessonLearningScreen> {
           children: [
             const Icon(Icons.play_circle_outline, size: 64, color: Colors.white),
             const SizedBox(height: 16),
+            const Text(
+              'Opening Video...',
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
             ElevatedButton.icon(
               onPressed: () => _launchUrl(videoUrl),
               icon: const Icon(Icons.open_in_new),
@@ -735,14 +747,11 @@ class _LessonLearningScreenState extends State<LessonLearningScreen> {
   }
 
   Widget _buildYouTubeEmbed(String videoUrl) {
-    final videoId = _extractYouTubeVideoId(videoUrl);
-    if (videoId == null) {
-      return _buildEmptyContent('Invalid YouTube URL', Icons.error, false);
-    }
-
-    // For Flutter web, you can use iframe with embedUrl
-    // For mobile, show a link to open in browser
-    // final embedUrl = 'https://www.youtube.com/embed/$videoId?rel=0&modestbranding=1';
+    // Automatically open YouTube URL in browser/app
+    // Also provide a button for manual opening
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _launchUrl(videoUrl);
+    });
     
     return Container(
       color: Colors.black,
@@ -752,15 +761,15 @@ class _LessonLearningScreenState extends State<LessonLearningScreen> {
           children: [
             const Icon(Icons.play_circle_outline, size: 64, color: Colors.white),
             const SizedBox(height: 16),
-            Text(
-              'YouTube Video',
-              style: const TextStyle(color: Colors.white, fontSize: 16),
+            const Text(
+              'Opening YouTube Video...',
+              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
             const SizedBox(height: 8),
             ElevatedButton.icon(
               onPressed: () => _launchUrl(videoUrl),
               icon: const Icon(Icons.open_in_new),
-              label: const Text('Watch on YouTube'),
+              label: const Text('Open in YouTube'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
@@ -842,6 +851,12 @@ class _LessonLearningScreenState extends State<LessonLearningScreen> {
       return _buildEmptyContent('No PDF URL provided', Icons.picture_as_pdf, isDarkMode);
     }
 
+    // Automatically open PDF URL in browser/app
+    // Also provide a button for manual opening
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _launchUrl(pdfUrl);
+    });
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -874,7 +889,7 @@ class _LessonLearningScreenState extends State<LessonLearningScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Tap the button below to open the PDF in your browser',
+            'Opening PDF in browser...',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
@@ -1010,29 +1025,44 @@ class _LessonLearningScreenState extends State<LessonLearningScreen> {
   }
 
   Future<void> _launchUrl(String url) async {
-    // For now, show a snackbar. Add url_launcher package for full functionality
-    Get.snackbar(
-      'Open URL',
-      'Opening: $url',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: AppColors.onboardingContinue.withOpacity(0.8),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
-    );
-    
-    // Uncomment when url_launcher is added:
-    // final uri = Uri.parse(url);
-    // if (await canLaunchUrl(uri)) {
-    //   await launchUrl(uri, mode: LaunchMode.externalApplication);
-    // } else {
-    //   Get.snackbar(
-    //     'Error',
-    //     'Could not open URL',
-    //     snackPosition: SnackPosition.TOP,
-    //     backgroundColor: Colors.red.withOpacity(0.8),
-    //     colorText: Colors.white,
-    //   );
-    // }
+    try {
+      final uri = Uri.parse(url);
+      
+      // Try to launch URL with platform default (browser)
+      // This will use the default browser or appropriate app
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.platformDefault,
+      );
+      
+      if (!launched) {
+        // If platform default fails, try external application
+        final launchedExternal = await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+        
+        if (!launchedExternal) {
+          Get.snackbar(
+            'Error',
+            'Could not open URL: $url',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.red.withOpacity(0.8),
+            colorText: Colors.white,
+            duration: const Duration(seconds: 3),
+          );
+        }
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to open URL: $e',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    }
   }
 }
 

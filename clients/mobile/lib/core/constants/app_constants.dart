@@ -22,6 +22,11 @@ class AppConstants {
   static const String userEmailKey = 'user_email';
   static const String userRoleKey = 'user_role';
   
+  // Secure Storage Keys for Biometric
+  static const String secureEmailKey = 'secure_email';
+  static const String securePasswordKey = 'secure_password';
+  static const String biometricEnabledKey = 'biometric_enabled';
+  
   // App Info
   static const String appName = 'Smart Academy';
   static const String appVersion = '1.0.0';

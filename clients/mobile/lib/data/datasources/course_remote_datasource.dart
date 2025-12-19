@@ -8,6 +8,7 @@ import '../models/course/lesson.dart';
 import '../models/course/lesson_content.dart';
 import '../models/course/quiz.dart';
 import '../models/course/question.dart';
+import '../models/course/quiz_attempt.dart';
 
 class CourseRemoteDataSource {
   final ApiClient _apiClient;
@@ -685,6 +686,132 @@ class CourseRemoteDataSource {
       Logger.logError('Delete question error', error: e);
       if (e.response != null) {
         final message = e.response!.data?['message'] ?? 'Failed to delete question';
+        throw Exception(message);
+      } else {
+        throw Exception('Network error. Please check your connection.');
+      }
+    }
+  }
+
+  // ============================================================================
+  // Quiz Attempt API
+  // ============================================================================
+
+  /// Start a new quiz attempt
+  Future<QuizAttempt> startQuizAttempt(String quizId) async {
+    try {
+      Logger.logInfo('Starting quiz attempt for quiz: $quizId');
+      final response = await _apiClient.post(
+        '${AppConstants.courseServicePath}/api/quiz-attempts/start/$quizId',
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Logger.logInfo('Quiz attempt started successfully');
+        return QuizAttempt.fromJson(response.data);
+      } else {
+        throw Exception('Failed to start quiz attempt');
+      }
+    } on DioException catch (e) {
+      Logger.logError('Start quiz attempt error', error: e);
+      if (e.response != null) {
+        final message = e.response!.data?['message'] ?? 'Failed to start quiz attempt';
+        throw Exception(message);
+      } else {
+        throw Exception('Network error. Please check your connection.');
+      }
+    }
+  }
+
+  /// Submit quiz attempt
+  Future<QuizAttempt> submitQuizAttempt(String attemptId, SubmitQuizAttemptRequest request) async {
+    try {
+      Logger.logInfo('Submitting quiz attempt: $attemptId');
+      final response = await _apiClient.post(
+        '${AppConstants.courseServicePath}/api/quiz-attempts/$attemptId/submit',
+        data: request.toJson(),
+      );
+      if (response.statusCode == 200) {
+        Logger.logInfo('Quiz attempt submitted successfully');
+        return QuizAttempt.fromJson(response.data);
+      } else {
+        throw Exception('Failed to submit quiz attempt');
+      }
+    } on DioException catch (e) {
+      Logger.logError('Submit quiz attempt error', error: e);
+      if (e.response != null) {
+        final message = e.response!.data?['message'] ?? 'Failed to submit quiz attempt';
+        throw Exception(message);
+      } else {
+        throw Exception('Network error. Please check your connection.');
+      }
+    }
+  }
+
+  /// Get student's all quiz attempts
+  Future<List<QuizAttempt>> getStudentAttempts(int studentId) async {
+    try {
+      Logger.logInfo('Fetching quiz attempts for student: $studentId');
+      final response = await _apiClient.get(
+        '${AppConstants.courseServicePath}/api/quiz-attempts/student/$studentId',
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        Logger.logInfo('Fetched ${data.length} quiz attempts');
+        return data.map((json) => QuizAttempt.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load quiz attempts');
+      }
+    } on DioException catch (e) {
+      Logger.logError('Get student attempts error', error: e);
+      if (e.response != null) {
+        final message = e.response!.data?['message'] ?? 'Failed to load quiz attempts';
+        throw Exception(message);
+      } else {
+        throw Exception('Network error. Please check your connection.');
+      }
+    }
+  }
+
+  /// Get student's attempts for a specific quiz
+  Future<List<QuizAttempt>> getStudentQuizAttempts(int studentId, String quizId) async {
+    try {
+      Logger.logInfo('Fetching quiz attempts for student $studentId and quiz $quizId');
+      final response = await _apiClient.get(
+        '${AppConstants.courseServicePath}/api/quiz-attempts/student/$studentId/quiz/$quizId',
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        Logger.logInfo('Fetched ${data.length} quiz attempts');
+        return data.map((json) => QuizAttempt.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load quiz attempts');
+      }
+    } on DioException catch (e) {
+      Logger.logError('Get student quiz attempts error', error: e);
+      if (e.response != null) {
+        final message = e.response!.data?['message'] ?? 'Failed to load quiz attempts';
+        throw Exception(message);
+      } else {
+        throw Exception('Network error. Please check your connection.');
+      }
+    }
+  }
+
+  /// Get attempt details
+  Future<QuizAttempt> getAttemptDetails(String attemptId) async {
+    try {
+      Logger.logInfo('Fetching quiz attempt details: $attemptId');
+      final response = await _apiClient.get(
+        '${AppConstants.courseServicePath}/api/quiz-attempts/$attemptId',
+      );
+      if (response.statusCode == 200) {
+        return QuizAttempt.fromJson(response.data);
+      } else {
+        throw Exception('Failed to load attempt details');
+      }
+    } on DioException catch (e) {
+      Logger.logError('Get attempt details error', error: e);
+      if (e.response != null) {
+        final message = e.response!.data?['message'] ?? 'Failed to load attempt details';
         throw Exception(message);
       } else {
         throw Exception('Network error. Please check your connection.');

@@ -44,14 +44,14 @@ class Question {
 
 class QuestionOption {
   final String id;
-  final String questionId;
+  final String? questionId; // Optional - not always present in API response
   final String optionText;
   final bool isCorrect;
   final int? optionOrder;
 
   QuestionOption({
     required this.id,
-    required this.questionId,
+    this.questionId,
     required this.optionText,
     required this.isCorrect,
     this.optionOrder,
@@ -60,7 +60,7 @@ class QuestionOption {
   factory QuestionOption.fromJson(Map<String, dynamic> json) {
     return QuestionOption(
       id: json['id'] as String,
-      questionId: json['questionId'] as String,
+      questionId: json['questionId'] as String?,
       optionText: json['optionText'] as String,
       isCorrect: json['isCorrect'] as bool,
       optionOrder: json['optionOrder'] as int?,
@@ -70,7 +70,7 @@ class QuestionOption {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'questionId': questionId,
+      if (questionId != null) 'questionId': questionId,
       'optionText': optionText,
       'isCorrect': isCorrect,
       if (optionOrder != null) 'optionOrder': optionOrder,

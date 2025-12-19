@@ -23,8 +23,20 @@ public class CreditServiceImpl implements CreditService {
     @Override
     @Transactional(readOnly = true)
     public CreditDto.CreditBalanceResponse getBalance(Long studentId) {
+        // Check if credit exists (read-only transaction)
         StudentCredit credit = creditRepository.findByUserId(studentId)
-                .orElseGet(() -> initializeAndGet(studentId));
+                .orElse(null);
+        
+        // If not found, return initial balance (10 credits) instead of trying to create it
+        // The account will be created automatically when needed (e.g., during registration or first credit update)
+        if (credit == null) {
+            log.info("Credit account not found for user {}, returning initial balance (10 credits)", studentId);
+            return CreditDto.CreditBalanceResponse.builder()
+                    .userId(studentId)
+                    .balance(BigDecimal.valueOf(10))
+                    .lastUpdated(java.time.LocalDateTime.now())
+                    .build();
+        }
 
         return CreditDto.CreditBalanceResponse.builder()
                 .userId(credit.getUserId())
@@ -63,12 +75,13 @@ public class CreditServiceImpl implements CreditService {
         if (!creditRepository.existsByUserId(userId)) {
             StudentCredit credit = StudentCredit.builder()
                     .userId(userId)
-                    .balance(BigDecimal.ZERO)
+                    .balance(BigDecimal.valueOf(10)) // Initial balance: 10 credits
                     .build();
             creditRepository.save(credit);
-            log.info("Initialized credit account for user {}", userId);
+            log.info("Initialized credit account for user {} with 10 credits", userId);
         }
     }
+
 
     private StudentCredit initializeAndGet(Long userId) {
         initializeCreditAccount(userId);

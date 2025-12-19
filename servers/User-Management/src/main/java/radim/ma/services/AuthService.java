@@ -57,7 +57,7 @@ public class AuthService {
 
                 var savedUser = userRepository.save(user);
 
-                // Initialize credit account with zero balance
+                // Initialize credit account with initial balance (10 credits)
                 creditService.initializeCreditAccount(savedUser.getId());
 
                 // Send verification email with OTP

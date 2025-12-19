@@ -2,10 +2,13 @@ import 'package:get/get.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/models/progress/progress.dart';
 import '../../../domain/repositories/progress_repository.dart';
+import '../../../domain/repositories/user_repository.dart';
+import 'profile_controller.dart';
 
 class ProgressController extends GetxController {
-  // Repository
+  // Repositories
   late final ProgressRepository _progressRepository;
+  late final UserRepository _userRepository;
 
   // Progress data
   final courseProgress = <String, CourseProgressResponse>{}.obs;
@@ -17,6 +20,7 @@ class ProgressController extends GetxController {
   void onInit() {
     super.onInit();
     _progressRepository = Get.find<ProgressRepository>();
+    _userRepository = Get.find<UserRepository>();
   }
 
   /// Mark lesson as complete
@@ -36,13 +40,40 @@ class ProgressController extends GetxController {
         lessonProgress[response.lessonId] = progressList;
       }
 
-      Get.snackbar(
-        'Success',
-        'Lesson marked as complete!',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.colorScheme.primary.withOpacity(0.8),
-        colorText: Get.theme.colorScheme.onPrimary,
-      );
+      // Reward student with 5 credits for completing the lesson
+      try {
+        final creditBalance = await _userRepository.rewardLessonComplete();
+        
+        // Update ProfileController if it exists to refresh the credit display
+        try {
+          final profileController = Get.find<ProfileController>();
+          profileController.creditBalance.value = creditBalance;
+          profileController.creditBalanceError.value = '';
+        } catch (e) {
+          // ProfileController might not be initialized, that's okay
+          Logger.logWarning('ProfileController not found, skipping credit balance update');
+        }
+        
+        Get.snackbar(
+          'Success',
+          'Lesson completed! +5 credits (Total: ${creditBalance.balance.toStringAsFixed(2)})',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Get.theme.colorScheme.primary.withOpacity(0.8),
+          colorText: Get.theme.colorScheme.onPrimary,
+          duration: const Duration(seconds: 3),
+        );
+        Logger.logInfo('Rewarded 5 credits for lesson completion. New balance: ${creditBalance.balance}');
+      } catch (creditError) {
+        // If credit reward fails, still show success for lesson completion
+        Logger.logError('Failed to reward credits', error: creditError);
+        Get.snackbar(
+          'Success',
+          'Lesson marked as complete!',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Get.theme.colorScheme.primary.withOpacity(0.8),
+          colorText: Get.theme.colorScheme.onPrimary,
+        );
+      }
     } catch (e) {
       Logger.logError('Mark lesson complete error', error: e);
       Get.snackbar(

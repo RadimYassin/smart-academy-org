@@ -25,4 +25,10 @@ public class CreditDto {
         @NotNull(message = "Amount is required")
         private BigDecimal amount;
     }
+
+    @Data
+    public static class DeductCreditRequest {
+        @NotNull(message = "Amount is required")
+        private Double amount;
+    }
 }

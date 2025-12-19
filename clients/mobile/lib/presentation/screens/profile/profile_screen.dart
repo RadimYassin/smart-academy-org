@@ -201,11 +201,96 @@ class ProfileScreen extends GetView<ProfileController> {
   Widget _buildStatsCards(BuildContext context, ThemeData theme, bool isDarkMode) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: Card(
-              color: AppColors.success.withValues(alpha: 0.15),
+          Row(
+            children: [
+              Expanded(
+                child: Card(
+                  color: AppColors.success.withValues(alpha: 0.15),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(
+                      color: isDarkMode
+                          ? AppColors.border.withValues(alpha: 0.2)
+                          : AppColors.border,
+                      width: 1,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Obx(() => Text(
+                          '${controller.completedCoursesCount.value}',
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.success,
+                          ),
+                        )),
+                        const SizedBox(height: 4),
+                        Text(
+                          AppStrings.courseCompleted,
+                          style: TextStyle(
+                            color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Card(
+                  color: AppColors.warning.withValues(alpha: 0.15),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(
+                      color: isDarkMode
+                          ? AppColors.border.withValues(alpha: 0.2)
+                          : AppColors.border,
+                      width: 1,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Obx(() => Text(
+                          '${controller.enrolledCoursesCount.value}',
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.warning,
+                          ),
+                        )),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Enrolled Courses',
+                          style: TextStyle(
+                            color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Credit Balance Card
+          Obx(() {
+            final credit = controller.creditBalance.value;
+            final isLoading = controller.isLoadingCreditBalance.value;
+            final error = controller.creditBalanceError.value;
+            
+            return Card(
+              color: Colors.blue.withValues(alpha: 0.15),
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -218,66 +303,80 @@ class ProfileScreen extends GetView<ProfileController> {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Column(
+                child: Row(
                   children: [
-                    Obx(() => Text(
-                      '${controller.completedCoursesCount.value}',
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.success,
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    )),
-                    const SizedBox(height: 4),
-                    Text(
-                      AppStrings.courseCompleted,
-                      style: TextStyle(
-                        color: isDarkMode ? AppColors.greyLight : AppColors.grey,
-                        fontSize: 14,
+                      child: isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                              ),
+                            )
+                          : Icon(
+                              error.isNotEmpty
+                                  ? Icons.error_outline
+                                  : Icons.account_balance_wallet,
+                              color: error.isNotEmpty ? Colors.red : Colors.blue,
+                              size: 24,
+                            ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Credits',
+                            style: TextStyle(
+                              color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          if (error.isNotEmpty)
+                            Text(
+                              error.length > 30 ? '${error.substring(0, 30)}...' : error,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: Colors.red,
+                                fontSize: 12,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          else
+                            Text(
+                              credit != null
+                                  ? '${credit.balance.toStringAsFixed(2)}'
+                                  : isLoading
+                                      ? 'Loading...'
+                                      : '0.00',
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: credit != null ? Colors.blue : (isDarkMode ? AppColors.greyLight : AppColors.grey),
+                              ),
+                            ),
+                        ],
                       ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh, size: 20),
+                      color: Colors.blue,
+                      onPressed: isLoading ? null : () => controller.loadCreditBalance(),
+                      tooltip: 'Refresh',
                     ),
                   ],
                 ),
               ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Card(
-              color: AppColors.warning.withValues(alpha: 0.15),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(
-                  color: isDarkMode
-                      ? AppColors.border.withValues(alpha: 0.2)
-                      : AppColors.border,
-                  width: 1,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    Obx(() => Text(
-                      '${controller.enrolledCoursesCount.value}',
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.warning,
-                      ),
-                    )),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Enrolled Courses',
-                      style: TextStyle(
-                        color: isDarkMode ? AppColors.greyLight : AppColors.grey,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+            );
+          }),
         ],
       ),
     );
@@ -545,6 +644,40 @@ class ProfileScreen extends GetView<ProfileController> {
                 activeThumbColor: AppColors.onboardingContinue,
               );
             }),
+            // Biometric Authentication Toggle
+            Obx(() {
+              if (!controller.isBiometricAvailable.value) {
+                return const SizedBox.shrink();
+              }
+              
+              return SwitchListTile(
+                title: Text(
+                  'Biometric Authentication',
+                  style: TextStyle(
+                    color: isDarkMode ? AppColors.white : AppColors.black,
+                  ),
+                ),
+                subtitle: Text(
+                  'Use fingerprint or Face ID to sign in quickly',
+                  style: TextStyle(
+                    color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                    fontSize: 12,
+                  ),
+                ),
+                secondary: Icon(
+                  Icons.fingerprint,
+                  color: isDarkMode ? AppColors.white : AppColors.black,
+                ),
+                value: controller.isBiometricEnabled.value,
+                onChanged: (value) async {
+                  // Update UI immediately for better UX
+                  controller.isBiometricEnabled.value = value;
+                  // Then perform the actual toggle
+                  await controller.toggleBiometric(value);
+                },
+                activeThumbColor: AppColors.onboardingContinue,
+              );
+            }),
             Divider(
               color: isDarkMode
                   ? AppColors.border.withValues(alpha: 0.2)
@@ -568,6 +701,26 @@ class ProfileScreen extends GetView<ProfileController> {
             ),
             _buildSettingsTile(context, theme, isDarkMode, AppStrings.language, Icons.language_outlined, () {}),
             _buildSettingsTile(context, theme, isDarkMode, AppStrings.privacy, Icons.privacy_tip_outlined, () {}),
+            Divider(
+              color: isDarkMode
+                  ? AppColors.border.withValues(alpha: 0.2)
+                  : AppColors.border,
+            ),
+            // Logout button
+            ListTile(
+              leading: Icon(
+                Icons.logout,
+                color: Colors.red,
+              ),
+              title: Text(
+                'Logout',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              onTap: () => controller.logout(),
+            ),
           ],
         ),
       ),
