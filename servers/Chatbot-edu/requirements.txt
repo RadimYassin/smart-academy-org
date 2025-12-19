@@ -3,6 +3,9 @@
 # Compatible with Pydantic v2
 # ======================================
 
+# Extra index for PyTorch CPU builds
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 # API Framework
 fastapi==0.109.0
 uvicorn[standard]==0.27.0
@@ -17,6 +20,7 @@ langchain-core==0.2.23
 # Vector Store & Embeddings
 faiss-cpu==1.8.0
 sentence-transformers==2.5.1
+torch==2.2.0+cpu
 
 # PDF Processing
 pypdf==3.17.4
@@ -39,15 +43,8 @@ langsmith>=0.1.0
 numpy<2.0.0
 tiktoken>=0.5.0
 
-# Multimedia dependencies (for audio & image endpoints)
-SpeechRecognition>=3.10.0
-gTTS>=2.5.0
-google-generativeai>=0.3.0
-Pillow>=10.0.0
-PyAudio>=0.2.14
-
 # Microservices Integration
-py-eureka-client==0.11.0
+py-eureka-client==0.10.3
 PyJWT==2.8.0
 
 # Optional: Ollama support

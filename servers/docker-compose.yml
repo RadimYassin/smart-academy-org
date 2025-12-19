@@ -218,7 +218,7 @@ services:
 
       # LLM Provider Configuration
       LLM_PROVIDER: ${LLM_PROVIDER:-openai}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_API_KEY: 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
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       OPENAI_TEMPERATURE: ${OPENAI_TEMPERATURE:-0.7}
 

@@ -74,6 +74,8 @@ docker-compose down -v
 | **User Management** | http://localhost:8082/swagger-ui.html | Auth & User API docs |
 | **Course Management** | http://localhost:8081/swagger-ui.html | Course API docs |
 | **LMS Connector** | http://localhost:3000 | Moodle integration service |
+| **Chatbot-edu** | http://localhost:8005/docs | AI Chatbot API docs |
+| **MinIO Console** | http://localhost:9001 | Object storage (minioadmin/minioadmin) |
 
 ### Database Connections
 
@@ -116,6 +118,7 @@ Visit http://localhost:8761 and verify all services are registered:
 - COURSE-SERVICE
 - GATEWAY-SERVICE
 - LMSCONNECTOR
+- CHATBOT-EDU-SERVICE
 
 ### 2. Test User Registration (via Gateway)
 ```bash
@@ -143,6 +146,30 @@ curl -X POST http://localhost:8888/user-management-service/api/v1/auth/login \
 ### 4. Access Swagger UI
 - User Management: http://localhost:8082/swagger-ui.html
 - Course Management: http://localhost:8081/swagger-ui.html
+- Chatbot-edu: http://localhost:8005/docs
+
+### 5. Test Chatbot Health Check (via Gateway)
+```bash
+curl http://localhost:8888/chatbot/health
+```
+
+### 6. Test Chatbot Question (via Gateway)
+```bash
+# First, get JWT token from login (step 3)
+# Then ask a question
+curl -X POST http://localhost:8888/chatbot/chat/ask \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "question": "What is the main topic of the course?"
+  }'
+```
+
+**Note**: Before asking questions, you need to ingest documents first:
+```bash
+curl -X POST http://localhost:8888/chatbot/admin/ingest \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
 
 ---
 

@@ -35,6 +35,14 @@ spring:
             - Path=/lmsconnector/**
           filters:
             - StripPrefix=1
+            
+        # Chatbot-edu Service Routes
+        - id: chatbot-edu-service
+          uri: http://chatbot-edu-service:8005
+          predicates:
+            - Path=/chatbot/**
+          filters:
+            - StripPrefix=1
       
       # CORS Configuration
       globalcors:

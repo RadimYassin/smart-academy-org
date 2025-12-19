@@ -6,10 +6,13 @@ import jwt
 from fastapi import Header, HTTPException, status
 import os
 import logging
+import base64
 
 logger = logging.getLogger(__name__)
 
-JWT_SECRET = os.getenv("JWT_SECRET", "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970")
+# IMPORTANT: Java uses BASE64.decode() on the secret, so we must too!
+JWT_SECRET_RAW = os.getenv("JWT_SECRET", "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970")
+JWT_SECRET = base64.b64decode(JWT_SECRET_RAW)  # Decode from BASE64 like Java does
 JWT_ALGORITHM = "HS256"
 
 def verify_token(authorization: str = Header(None)) -> dict:
@@ -31,7 +34,7 @@ def verify_token(authorization: str = Header(None)) -> dict:
             detail="Authorization header missing"
         )
     
-    if not authorization.startsWith("Bearer "):
+    if not authorization.startswith("Bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authorization format. Use: Bearer <token>"
@@ -39,18 +42,33 @@ def verify_token(authorization: str = Header(None)) -> dict:
     
     token = authorization[7:]  # Remove "Bearer "
     
+    # Debug logging
+    logger.debug(f"Attempting to verify JWT token")
+    logger.debug(f"Token length: {len(token)}")
+    logger.debug(f"Token parts: {len(token.split('.'))}")
+    logger.debug(f"JWT_SECRET length: {len(JWT_SECRET)}")
+    logger.debug(f"JWT_ALGORITHM: {JWT_ALGORITHM}")
+    
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        logger.info(f"Token verified for user: {payload.get('userId')}")
+        logger.info(f"✅ Token verified for user: {payload.get('userId')} / {payload.get('sub')}")
         return payload
     except jwt.ExpiredSignatureError:
-        logger.warning("Token expired")
+        logger.warning("❌ Token expired")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token expired"
         )
+    except jwt.InvalidSignatureError as e:
+        logger.error(f"❌ Signature verification failed: {e}")
+        logger.error(f"Token header (first 50 chars): {token[:50]}...")
+        logger.error(f"Using secret (first 10 chars): {JWT_SECRET[:10]}...")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
     except jwt.InvalidTokenError as e:
-        logger.error(f"Invalid token: {e}")
+        logger.error(f"❌ Invalid token: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"

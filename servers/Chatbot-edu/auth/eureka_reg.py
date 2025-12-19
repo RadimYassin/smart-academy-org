@@ -32,7 +32,6 @@ def register_with_eureka(
             app_name=app_name,
             instance_port=port,
             instance_host=instance_host,
-            data_center_info="MyOwn",
             renewal_interval_in_secs=30,
             duration_in_secs=90
         )
