@@ -3,9 +3,9 @@
 
 -- Create question_options table
 CREATE TABLE IF NOT EXISTS question_options (
-    id UUID PRIMARY KEY DEFAULT RANDOM_UUID(),
+    id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
     question_id UUID NOT NULL,
-    option_text VARCHAR(500) NOT NULL,
+    option_text VARCHAR(500) NOT NUL L,
     is_correct BOOLEAN NOT NULL DEFAULT FALSE,
     option_order INTEGER,
     CONSTRAINT fk_question_options_question FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
