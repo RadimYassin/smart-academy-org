@@ -3,7 +3,7 @@
 
 -- Create question_options table
 CREATE TABLE IF NOT EXISTS question_options (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT RANDOM_UUID(),
     question_id UUID NOT NULL,
     option_text VARCHAR(500) NOT NULL,
     is_correct BOOLEAN NOT NULL DEFAULT FALSE,
