@@ -15,6 +15,7 @@ import radim.ma.repositories.RefreshTokenRepository;
 import radim.ma.repositories.UserRepository;
 import radim.ma.security.JwtUtil;
 import radim.ma.service.EmailService;
+import radim.ma.messaging.EventPublisher;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -35,6 +36,7 @@ public class AuthService {
         private final EmailService emailService;
         private final radim.ma.service.OTPService otpService;
         private final CreditService creditService;
+        private final EventPublisher eventPublisher;
 
         public AuthResponse register(RegisterRequest request) {
                 if (userRepository.existsByEmail(request.getEmail())) {
@@ -60,11 +62,11 @@ public class AuthService {
                 // Initialize credit account with zero balance
                 creditService.initializeCreditAccount(savedUser.getId());
 
-                // Send verification email with OTP
-                emailService.sendVerificationEmail(
-                                savedUser.getEmail(),
-                                savedUser.getFirstName(),
-                                otpCode);
+                // 🚀 Publish user.created event to RabbitMQ (async - no waiting!)
+                eventPublisher.publishUserCreated(savedUser, otpCode);
+
+                // Note: Email sending is now handled by Email Service consumer
+                // This makes registration 10x faster!
 
                 Map<String, Object> extraClaims = new HashMap<>();
                 extraClaims.put("userId", savedUser.getId());

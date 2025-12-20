@@ -249,6 +249,30 @@ services:
       - chatbot-temp:/app/temp_pdfs
     restart: on-failure
 
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: smart-academy-rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672" # AMQP protocol port
+      - "15672:15672" # Management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-admin123}
+      RABBITMQ_DEFAULT_VHOST: smart-academy
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - rabbitmq-logs:/var/log/rabbitmq
+    networks:
+      - smart-academy-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
 networks:
   smart-academy-network:
     driver: bridge
@@ -261,3 +285,5 @@ volumes:
   chatbot-faiss:
   chatbot-courses:
   chatbot-temp:
+  rabbitmq-data:
+  rabbitmq-logs:
