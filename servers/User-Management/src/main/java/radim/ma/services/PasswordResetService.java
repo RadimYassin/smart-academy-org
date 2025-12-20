@@ -5,7 +5,7 @@ public interface PasswordResetService {
     /**
      * Request password reset - generates OTP and sends email
      * 
-     * @param email User's email address
+     * @param email User's hashed email address
      */
     void requestPasswordReset(String email);
 
