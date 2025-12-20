@@ -20,18 +20,21 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
 
+    @Transactional(readOnly = true)
     public List<CourseDto.Response> getAllCourses() {
         return courseRepository.findAll().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public CourseDto.Response getCourseById(UUID courseId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
         return mapToResponse(course);
     }
 
+    @Transactional(readOnly = true)
     public List<CourseDto.Response> getCoursesByTeacherId(Long teacherId) {
         return courseRepository.findByTeacherId(teacherId).stream()
                 .map(this::mapToResponse)

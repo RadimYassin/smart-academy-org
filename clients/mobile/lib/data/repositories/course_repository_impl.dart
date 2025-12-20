@@ -7,6 +7,7 @@ import '../models/course/lesson.dart';
 import '../models/course/lesson_content.dart';
 import '../models/course/quiz.dart';
 import '../models/course/question.dart';
+import '../models/course/quiz_attempt.dart';
 
 class CourseRepositoryImpl implements CourseRepository {
   final CourseRemoteDataSource _remoteDataSource;
@@ -295,6 +296,57 @@ class CourseRepositoryImpl implements CourseRepository {
       await _remoteDataSource.deleteQuestion(quizId, questionId);
     } catch (e) {
       Logger.logError('Repository delete question error', error: e);
+      rethrow;
+    }
+  }
+
+  // Quiz Attempt operations
+  @override
+  Future<QuizAttempt> startQuizAttempt(String quizId) async {
+    try {
+      return await _remoteDataSource.startQuizAttempt(quizId);
+    } catch (e) {
+      Logger.logError('Repository start quiz attempt error', error: e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<QuizAttempt> submitQuizAttempt(String attemptId, SubmitQuizAttemptRequest request) async {
+    try {
+      return await _remoteDataSource.submitQuizAttempt(attemptId, request);
+    } catch (e) {
+      Logger.logError('Repository submit quiz attempt error', error: e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<QuizAttempt>> getStudentAttempts(int studentId) async {
+    try {
+      return await _remoteDataSource.getStudentAttempts(studentId);
+    } catch (e) {
+      Logger.logError('Repository get student attempts error', error: e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<QuizAttempt>> getStudentQuizAttempts(int studentId, String quizId) async {
+    try {
+      return await _remoteDataSource.getStudentQuizAttempts(studentId, quizId);
+    } catch (e) {
+      Logger.logError('Repository get student quiz attempts error', error: e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<QuizAttempt> getAttemptDetails(String attemptId) async {
+    try {
+      return await _remoteDataSource.getAttemptDetails(attemptId);
+    } catch (e) {
+      Logger.logError('Repository get attempt details error', error: e);
       rethrow;
     }
   }

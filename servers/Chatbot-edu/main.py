@@ -50,12 +50,10 @@ async def lifespan(app: FastAPI):
         logger.warning("⚠️  Index FAISS non trouvé - Veuillez lancer l'ingestion (POST /admin/ingest)")
     
     # NEW: Register with Eureka
-    eureka_server = os.getenv("EUREKA_SERVER_URL", "http://localhost:8761/eureka")
-    service_port = int(os.getenv("SERVICE_PORT", "8005"))
     register_with_eureka(
         app_name="chatbot-edu-service",
-        port=service_port,
-        eureka_server=eureka_server
+        port=settings.service_port,
+        eureka_server=settings.eureka_server_url
     )
     
     logger.info("=" * 70)

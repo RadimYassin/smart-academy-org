@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../../core/utils/logger.dart';
@@ -291,21 +292,37 @@ class CoursesController extends GetxController {
   }
 
   /// Load course content (modules and quizzes)
+  /// This follows the same pattern as the microfrontends implementation
   Future<void> loadCourseContent(String courseId) async {
     try {
       isLoadingCourseContent.value = true;
+      errorMessage.value = '';
 
+      // Step 1: Fetch modules and quizzes in parallel (like microfrontends)
+      debugPrint('🟦 [loadCourseContent] Step 1: Fetching modules and quizzes for courseId: $courseId');
+      debugPrint('🟦 [loadCourseContent] API endpoint: ${AppConstants.courseServicePath}/courses/$courseId/modules');
       final List<Module> modules = await _courseRepository.getModulesByCourse(courseId);
       final List<Quiz> quizzes = await _courseRepository.getQuizzesByCourse(courseId);
+      debugPrint('🟦 [loadCourseContent] Step 1: Fetched ${modules.length} modules and ${quizzes.length} quizzes');
+      
+      if (modules.isEmpty) {
+        debugPrint('⚠️ [loadCourseContent] WARNING: No modules found for course $courseId');
+        Logger.logWarning('No modules found for course: $courseId');
+      }
 
-      // For each module, fetch its lessons
+      // Step 2: For each module, fetch its lessons (like microfrontends)
+      debugPrint('🟦 [loadCourseContent] Step 2: Processing ${modules.length} modules to fetch lessons');
       final List<Module> modulesWithLessons = await Future.wait<Module>(
         modules.map<Future<Module>>((Module module) async {
+          debugPrint('  📦 Processing module: ${module.title} (${module.id})');
           final List<Lesson> lessons = await _courseRepository.getLessonsByModule(module.id);
-          // For each lesson, fetch its content
-          final List<Lesson> lessonsWithContent = await Future.wait(
+          debugPrint('    ✅ Found ${lessons.length} lessons for module ${module.title}');
+          
+          // Step 3: For each lesson, fetch its content (like microfrontends)
+          final List<Lesson> lessonsWithContent = await Future.wait<Lesson>(
             lessons.map<Future<Lesson>>((Lesson lesson) async {
               final List<LessonContent> contents = await _courseRepository.getContentByLesson(lesson.id);
+              debugPrint('      📄 Lesson ${lesson.title}: ${contents.length} content items');
               return Lesson(
                 id: lesson.id,
                 moduleId: lesson.moduleId,
@@ -318,7 +335,8 @@ class CoursesController extends GetxController {
               );
             }),
           );
-          return Module(
+          
+          final moduleWithLessons = Module(
             id: module.id,
             courseId: module.courseId,
             title: module.title,
@@ -328,13 +346,19 @@ class CoursesController extends GetxController {
             createdAt: module.createdAt,
             updatedAt: module.updatedAt,
           );
+          debugPrint('    ✅ Module ${module.title} completed with ${lessonsWithContent.length} lessons');
+          return moduleWithLessons;
         }),
       );
+      debugPrint('🟦 [loadCourseContent] Step 2: All modules processed. Total: ${modulesWithLessons.length}');
 
-      // For each quiz, fetch its questions
+      // Step 4: For each quiz, fetch its questions (like microfrontends)
+      debugPrint('🟦 [loadCourseContent] Step 4: Processing ${quizzes.length} quizzes to fetch questions');
       final List<Quiz> quizzesWithQuestions = await Future.wait<Quiz>(
         quizzes.map<Future<Quiz>>((Quiz quiz) async {
+          debugPrint('  📝 Processing quiz: ${quiz.title} (${quiz.id})');
           final List<Question> questions = await _courseRepository.getQuestionsByQuiz(quiz.id);
+          debugPrint('    ✅ Found ${questions.length} questions for quiz ${quiz.title}');
           return Quiz(
             id: quiz.id,
             courseId: quiz.courseId,
@@ -349,21 +373,96 @@ class CoursesController extends GetxController {
           );
         }),
       );
+      debugPrint('🟦 [loadCourseContent] Step 4: All quizzes processed. Total: ${quizzesWithQuestions.length}');
 
-      courseModules.value = modulesWithLessons;
-      courseQuizzes.value = quizzesWithQuestions;
+      // Step 5: Assign to observables - clear first, then assign (like microfrontends setState)
+      debugPrint('🟦 [loadCourseContent] Step 5: Assigning to observables');
+      debugPrint('  📊 Before assignment: courseModules.length = ${courseModules.length}');
+      debugPrint('  📊 modulesWithLessons.length = ${modulesWithLessons.length}');
+      debugPrint('  📊 quizzesWithQuestions.length = ${quizzesWithQuestions.length}');
+      
+      // Clear previous data
+      courseModules.clear();
+      courseQuizzes.clear();
+      debugPrint('  🧹 Cleared previous data');
+      
+      // Use direct value assignment (like microfrontends setState)
+      // This is more reliable than assignAll for triggering Obx rebuilds
+      debugPrint('  ➕ Assigning ${modulesWithLessons.length} modules using value =');
+      try {
+        courseModules.value = List.from(modulesWithLessons);
+        debugPrint('  ✅ After value assignment: courseModules.length = ${courseModules.length}');
+        // Force update by calling refresh
+        courseModules.refresh();
+        debugPrint('  ✅ Called courseModules.refresh()');
+      } catch (e) {
+        debugPrint('  🔴 ERROR assigning modules: $e');
+        rethrow;
+      }
+      
+      debugPrint('  ➕ Assigning ${quizzesWithQuestions.length} quizzes using value =');
+      try {
+        courseQuizzes.value = List.from(quizzesWithQuestions);
+        debugPrint('  ✅ After value assignment: courseQuizzes.length = ${courseQuizzes.length}');
+        // Force update by calling refresh
+        courseQuizzes.refresh();
+        debugPrint('  ✅ Called courseQuizzes.refresh()');
+      } catch (e) {
+        debugPrint('  🔴 ERROR assigning quizzes: $e');
+        rethrow;
+      }
 
-      Logger.logInfo('Loaded ${modulesWithLessons.length} modules and ${quizzesWithQuestions.length} quizzes');
-    } catch (e) {
+      Logger.logInfo('✅ Loaded ${modulesWithLessons.length} modules and ${quizzesWithQuestions.length} quizzes');
+      debugPrint('🟢 [loadCourseContent] FINAL: courseModules.length = ${courseModules.length}, courseQuizzes.length = ${courseQuizzes.length}');
+      
+      // Verify assignment immediately
+      if (courseModules.isEmpty && modulesWithLessons.isNotEmpty) {
+        debugPrint('🔴 CRITICAL ERROR: modulesWithLessons is not empty but courseModules is empty after assignment!');
+        debugPrint('🔴 This indicates a GetX reactivity issue');
+      } else if (courseModules.isNotEmpty) {
+        debugPrint('✅ SUCCESS: Modules assigned correctly');
+      }
+      
+      // Log for debugging
+      for (var module in modulesWithLessons) {
+        Logger.logInfo('  Module: ${module.title} - ${module.lessons?.length ?? 0} lessons');
+        debugPrint('  📦 Module: ${module.title} - ${module.lessons?.length ?? 0} lessons');
+        if (module.lessons != null) {
+          for (var lesson in module.lessons!) {
+            Logger.logInfo('    Lesson: ${lesson.title} - ${lesson.contents?.length ?? 0} contents');
+            debugPrint('    📄 Lesson: ${lesson.title} - ${lesson.contents?.length ?? 0} contents');
+          }
+        }
+      }
+    } catch (e, stackTrace) {
+      debugPrint('🔴 [loadCourseContent] EXCEPTION CAUGHT: $e');
+      debugPrint('🔴 Stack trace: $stackTrace');
       Logger.logError('Load course content error', error: e);
-      Get.snackbar(
-        'Error',
-        'Failed to load course content',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.colorScheme.error.withOpacity(0.8),
-        colorText: Get.theme.colorScheme.onError,
-      );
+      
+      // Extract a user-friendly error message
+      String errorMsg = 'Failed to load course content';
+      if (e.toString().contains('SocketException') || e.toString().contains('Connection')) {
+        errorMsg = 'Network error. Please check your internet connection.';
+      } else if (e.toString().contains('404')) {
+        errorMsg = 'Course content not found. The course may not have any modules or lessons yet.';
+      } else if (e.toString().contains('401') || e.toString().contains('403')) {
+        errorMsg = 'Authentication error. Please log in again.';
+      } else if (e.toString().contains('500')) {
+        errorMsg = 'Server error. Please try again later.';
+      } else {
+        errorMsg = 'Failed to load course content: ${e.toString().replaceAll('Exception: ', '')}';
+      }
+      
+      errorMessage.value = errorMsg;
+      
+      // Clear modules and quizzes on error to show empty state
+      courseModules.clear();
+      courseQuizzes.clear();
+      
+      // Don't show snackbar here - it causes "No Overlay widget found" error
+      // The error will be handled by the UI layer
     } finally {
+      debugPrint('🟦 [loadCourseContent] Finally block: Setting isLoadingCourseContent to false');
       isLoadingCourseContent.value = false;
     }
   }

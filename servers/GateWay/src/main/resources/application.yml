@@ -14,7 +14,7 @@ spring:
       routes:
         # User Management Service Routes
         - id: user-management-service
-          uri: http://user-management-service:8082
+          uri: http://localhost:8082
           predicates:
             - Path=/user-management-service/**
           filters:
@@ -22,7 +22,7 @@ spring:
         
         # Course Management Service Routes  
         - id: course-service
-          uri: http://course-management-service:8081
+          uri: http://localhost:8081
           predicates:
             - Path=/course-service/**
           filters:
@@ -38,9 +38,9 @@ spring:
             
         # Chatbot-edu Service Routes
         - id: chatbot-edu-service
-          uri: http://chatbot-edu-service:8005
+          uri: http://localhost:8005
           predicates:
-            - Path=/chatbot/**
+            - Path=/chatbot-edu-service/**
           filters:
             - StripPrefix=1
       

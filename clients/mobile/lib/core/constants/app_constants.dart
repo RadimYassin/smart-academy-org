@@ -1,11 +1,14 @@
 class AppConstants {
   // API Configuration - Smart Academy Backend
-  static const String baseUrl = 'http://localhost:8888'; // API Gateway URL
+  // Change this IP address to match your backend server
+  static const String baseUrl = 'http://172.20.10.2:8888'; // API Gateway URL
   static const String userServicePath = '/user-management-service';
   static const String courseServicePath = '/course-service';
   static const String lmsConnectorPath = '/lmsconnector';
+  static const String chatbotServicePath = '/chatbot-edu-service';
   
   static const Duration apiTimeout = Duration(seconds: 30);
+  static const Duration chatbotTimeout = Duration(seconds: 120); // Longer timeout for AI chat requests
   
   // Auth Endpoints
   static const String loginEndpoint = '$userServicePath/api/v1/auth/login';
@@ -22,6 +25,11 @@ class AppConstants {
   static const String userEmailKey = 'user_email';
   static const String userRoleKey = 'user_role';
   
+  // Secure Storage Keys for Biometric
+  static const String secureEmailKey = 'secure_email';
+  static const String securePasswordKey = 'secure_password';
+  static const String biometricEnabledKey = 'biometric_enabled';
+  
   // App Info
   static const String appName = 'Smart Academy';
   static const String appVersion = '1.0.0';
@@ -34,4 +42,3 @@ class AppConstants {
   static const String timeFormat = 'HH:mm:ss';
   static const String dateTimeFormat = 'yyyy-MM-dd HH:mm:ss';
 }
-

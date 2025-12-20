@@ -46,6 +46,15 @@ class SignInScreen extends GetView<SignInController> {
               const SizedBox(height: 24),
               // Sign In Button
               _buildSignInButton(context, isDarkMode),
+              const SizedBox(height: 16),
+              // Biometric Login Button (show if biometric is available and has saved credentials)
+              Obx(() {
+                // Show button if biometric is available
+                // The button will handle checking for saved credentials
+                return controller.isBiometricAvailable.value
+                    ? _buildBiometricButton(context, isDarkMode)
+                    : const SizedBox.shrink();
+              }),
               const SizedBox(height: 24),
               // Divider
               _buildDivider(context, isDarkMode),
@@ -375,6 +384,49 @@ class SignInScreen extends GetView<SignInController> {
             .scale(delay: 1900.ms),
       ],
     );
+  }
+
+  Widget _buildBiometricButton(BuildContext context, bool isDarkMode) {
+    return Obx(
+      () => SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: controller.isLoading.value 
+              ? null 
+              : () => controller.signInWithBiometric(isAutoLogin: false),
+          icon: Icon(
+            controller.biometricType.value.contains('Face') 
+                ? Icons.face 
+                : Icons.fingerprint,
+            size: 20,
+          ),
+          label: Text(
+            'Sign in with ${controller.biometricType.value}',
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: isDarkMode ? AppColors.white : AppColors.black,
+            side: BorderSide(
+              color: isDarkMode
+                  ? AppColors.border.withValues(alpha: 0.2)
+                  : AppColors.border,
+              width: 1.5,
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
+            disabledForegroundColor: AppColors.grey,
+          ),
+        ),
+      ),
+    )
+        .animate()
+        .fadeIn(duration: 500.ms, delay: 1400.ms)
+        .slideY(begin: 0.1, end: 0, duration: 500.ms, delay: 1400.ms);
   }
 
   Widget _buildSignUpLink(BuildContext context, bool isDarkMode) {

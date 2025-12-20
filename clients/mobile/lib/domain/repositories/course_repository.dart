@@ -4,6 +4,7 @@ import '../../data/models/course/lesson.dart';
 import '../../data/models/course/lesson_content.dart';
 import '../../data/models/course/quiz.dart';
 import '../../data/models/course/question.dart';
+import '../../data/models/course/quiz_attempt.dart';
 
 abstract class CourseRepository {
   // Course operations
@@ -45,5 +46,12 @@ abstract class CourseRepository {
   Future<Question> createQuestion(String quizId, CreateQuestionRequest request);
   Future<Question> updateQuestion(String quizId, String questionId, Map<String, dynamic> questionData);
   Future<void> deleteQuestion(String quizId, String questionId);
+
+  // Quiz Attempt operations
+  Future<QuizAttempt> startQuizAttempt(String quizId);
+  Future<QuizAttempt> submitQuizAttempt(String attemptId, SubmitQuizAttemptRequest request);
+  Future<List<QuizAttempt>> getStudentAttempts(int studentId);
+  Future<List<QuizAttempt>> getStudentQuizAttempts(int studentId, String quizId);
+  Future<QuizAttempt> getAttemptDetails(String attemptId);
 }
 

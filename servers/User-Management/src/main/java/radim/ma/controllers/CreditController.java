@@ -45,6 +45,30 @@ public class CreditController {
         return ResponseEntity.ok("Credits updated successfully");
     }
 
+    @PostMapping("/reward/lesson-complete")
+    @PreAuthorize("hasAnyRole('STUDENT', 'TEACHER', 'ADMIN')")
+    @Operation(summary = "Reward credits for completing a lesson", description = "Students can earn credits by completing lessons")
+    public ResponseEntity<CreditDto.CreditBalanceResponse> rewardLessonComplete(HttpServletRequest request) {
+        String token = extractTokenFromRequest(request);
+        Long userId = jwtUtil.extractClaim(token, claims -> claims.get("userId", Long.class));
+        // Add 5 credits for completing a lesson
+        creditService.updateCredits(userId, java.math.BigDecimal.valueOf(5));
+        return ResponseEntity.ok(creditService.getBalance(userId));
+    }
+
+    @PostMapping("/deduct")
+    @PreAuthorize("hasAnyRole('STUDENT', 'TEACHER', 'ADMIN')")
+    @Operation(summary = "Deduct credits from my account", description = "Students can deduct credits from their own account (e.g., for additional quiz attempts)")
+    public ResponseEntity<CreditDto.CreditBalanceResponse> deductCredits(
+            HttpServletRequest request,
+            @RequestBody @Valid CreditDto.DeductCreditRequest deductRequest) {
+        String token = extractTokenFromRequest(request);
+        Long userId = jwtUtil.extractClaim(token, claims -> claims.get("userId", Long.class));
+        // Deduct credits (amount should be positive, will be converted to negative)
+        creditService.updateCredits(userId, java.math.BigDecimal.valueOf(-deductRequest.getAmount()));
+        return ResponseEntity.ok(creditService.getBalance(userId));
+    }
+
     private String extractTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {

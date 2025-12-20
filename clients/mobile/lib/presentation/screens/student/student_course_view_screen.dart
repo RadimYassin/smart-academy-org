@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -24,6 +25,7 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
     final progressController = Get.find<ProgressController>();
     
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Load course if not already loaded
       if (controller.selectedCourse.value?.id != widget.courseId) {
         try {
           final courseRepository = Get.find<CourseRepository>();
@@ -35,9 +37,15 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
           return;
         }
       }
-      controller.loadCourseContent(widget.courseId);
-      progressController.loadCourseProgress(widget.courseId);
-      progressController.loadAllLessonProgressForCourse(widget.courseId);
+      
+      // Load course content (modules, lessons, content, quizzes) - same pattern as microfrontends
+      await controller.loadCourseContent(widget.courseId);
+      
+      // Load progress in parallel
+      await Future.wait([
+        progressController.loadCourseProgress(widget.courseId),
+        progressController.loadAllLessonProgressForCourse(widget.courseId),
+      ]);
     });
   }
 
@@ -60,6 +68,50 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
             child: Text(
               'Course not found',
               style: TextStyle(color: isDarkMode ? AppColors.white : AppColors.black),
+            ),
+          );
+        }
+
+        // Show error message if there's an error
+        if (controller.errorMessage.value.isNotEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Colors.red,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error loading course content',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? AppColors.white : AppColors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    controller.errorMessage.value,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      controller.errorMessage.value = '';
+                      controller.loadCourseContent(widget.courseId);
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
             ),
           );
         }
@@ -209,14 +261,18 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
                     .slideY(begin: 0.1, end: 0),
               ),
 
-              // Quizzes Section
-              if (controller.courseQuizzes.isNotEmpty)
-                SliverToBoxAdapter(
-                  child: _buildQuizzesSection(context, controller, isDarkMode)
+              // Quizzes Section - Wrap in Obx to observe changes
+              SliverToBoxAdapter(
+                child: Obx(() {
+                  if (controller.courseQuizzes.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return _buildQuizzesSection(context, controller, isDarkMode)
                       .animate()
                       .fadeIn(delay: 400.ms)
-                      .slideY(begin: 0.1, end: 0),
-                ),
+                      .slideY(begin: 0.1, end: 0);
+                }),
+              ),
 
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
@@ -272,31 +328,31 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
         children: [
           // Progress Section
           if (totalLessons > 0) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
                       'Your Progress',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
+                                              fontWeight: FontWeight.bold,
                             color: isDarkMode ? AppColors.white : AppColors.black,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
+                                            ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
                       '$completedLessons of $totalLessons lessons',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: isDarkMode ? AppColors.greyLight : AppColors.grey,
-                          ),
-                    ),
-                  ],
-                ),
-                Container(
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                  Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
+                    decoration: BoxDecoration(
                     color: AppColors.onboardingContinue.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -306,10 +362,10 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: AppColors.onboardingContinue,
-                    ),
-                  ),
-                ),
-              ],
+                              ),
+                            ),
+                          ),
+                        ],
             ),
             const SizedBox(height: 16),
             ClipRRect(
@@ -321,28 +377,28 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
                     ? AppColors.primaryLight.withOpacity(0.2)
                     : AppColors.grey.withOpacity(0.2),
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.onboardingContinue),
-              ),
-            ),
+                      ),
+                    ),
             const SizedBox(height: 20),
             const Divider(),
             const SizedBox(height: 16),
           ],
 
-          // Course Description
-          Text(
-            'About this course',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+                // Course Description
+                        Text(
+                          'About this course',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
                   color: isDarkMode ? AppColors.white : AppColors.black,
-                ),
-          ),
-          const SizedBox(height: 12),
+                              ),
+                    ),
+                    const SizedBox(height: 12),
           Text(
-            course.description,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                        course.description,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: isDarkMode ? AppColors.greyLight : AppColors.grey,
                   height: 1.6,
-                ),
+            ),
           ),
         ],
       ),
@@ -380,21 +436,21 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       child: ElevatedButton.icon(
         onPressed: () {
-          // Navigate to lesson learning screen
-          Get.toNamed(
-            '/student/lessons/$nextLessonId',
-            arguments: {
-              'courseId': widget.courseId,
-              'lessonId': nextLessonId,
-              'moduleId': nextModuleId,
-            },
-          );
-        },
+            // Navigate to lesson learning screen
+            Get.toNamed(
+              '/student/lessons/$nextLessonId',
+              arguments: {
+                'courseId': widget.courseId,
+                'lessonId': nextLessonId,
+                'moduleId': nextModuleId,
+              },
+            );
+          },
         icon: const Icon(Icons.play_arrow, size: 24),
         label: const Text(
-          'Continue Learning',
+                        'Continue Learning',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
+                      ),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.onboardingContinue,
           foregroundColor: AppColors.white,
@@ -414,57 +470,89 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
     ProgressController progressController,
     bool isDarkMode,
   ) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.menu_book_rounded,
-                color: AppColors.onboardingContinue,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Course Content',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: isDarkMode ? AppColors.white : AppColors.black,
-                    ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${controller.courseModules.length} modules • ${_getTotalLessons(controller)} lessons',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+    // Wrap in Obx to observe changes to courseModules
+    return Obx(() {
+      final modules = controller.courseModules;
+      final totalLessons = _getTotalLessons(controller);
+      
+      debugPrint('🟡 [_buildCourseContentSection] Building UI with ${modules.length} modules, $totalLessons lessons');
+      debugPrint('  isLoadingCourseContent: ${controller.isLoadingCourseContent.value}');
+      debugPrint('  courseModules.isEmpty: ${modules.isEmpty}');
+      
+      if (modules.isNotEmpty) {
+        debugPrint('  ✅ Modules found:');
+        for (var module in modules) {
+          debugPrint('    - ${module.title} (${module.id}) with ${module.lessons?.length ?? 0} lessons');
+        }
+      } else {
+        debugPrint('  ⚠️ No modules in courseModules list!');
+      }
+      
+      return Container(
+        margin: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.menu_book_rounded,
+                  color: AppColors.onboardingContinue,
+                  size: 28,
                 ),
-          ),
-          const SizedBox(height: 20),
-          if (controller.courseModules.isEmpty)
-            _buildEmptyState('No modules available', Icons.layers, isDarkMode)
-          else
-            ...controller.courseModules.asMap().entries.map((entry) {
-              final index = entry.key;
-              final module = entry.value;
-              return _buildModernModuleCard(
-                context,
-                controller,
-                module,
-                progressController,
-                isDarkMode,
-                index + 1,
+                const SizedBox(width: 12),
+                Text(
+                  'Course Content',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? AppColors.white : AppColors.black,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${modules.length} modules • $totalLessons lessons',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                  ),
+            ),
+            const SizedBox(height: 20),
+            if (controller.isLoadingCourseContent.value)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: CircularProgressIndicator(),
+                ),
               )
-                  .animate()
-                  .fadeIn(delay: (index * 50).ms)
-                  .slideX(begin: -0.1, end: 0);
-            }),
-        ],
-      ),
-    );
+            else if (modules.isEmpty)
+              _buildEmptyState(
+                controller.errorMessage.value.isNotEmpty
+                    ? controller.errorMessage.value
+                    : 'No modules available for this course. The course content may not be set up yet.',
+                Icons.layers,
+                isDarkMode,
+              )
+            else
+              ...modules.asMap().entries.map((entry) {
+                final index = entry.key;
+                final module = entry.value;
+                return _buildModernModuleCard(
+                  context,
+                  controller,
+                  module,
+                  progressController,
+                  isDarkMode,
+                  index + 1,
+                )
+                    .animate()
+                    .fadeIn(delay: (index * 50).ms)
+                    .slideX(begin: -0.1, end: 0);
+              }),
+          ],
+        ),
+      );
+    });
   }
 
   int _getTotalLessons(CoursesController controller) {
@@ -519,13 +607,13 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
             ),
             child: Center(
               child: Text(
-                '$moduleNumber',
+                      '$moduleNumber',
                 style: TextStyle(
                   color: AppColors.onboardingContinue,
-                  fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                   fontSize: 16,
-                ),
-              ),
+                      ),
+                    ),
             ),
           ),
           title: Text(
@@ -847,79 +935,86 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            Get.snackbar('Info', 'Quiz functionality coming soon');
+            // Navigate to quiz screen
+            Get.toNamed(
+              '/student/quizzes/${quiz.id}',
+              arguments: {
+                'quizTitle': quiz.title,
+                'quizDescription': quiz.description,
+              },
+            );
           },
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
-              children: [
-                Container(
+                  children: [
+                    Container(
                   width: 50,
                   height: 50,
-                  decoration: BoxDecoration(
+                      decoration: BoxDecoration(
                     color: Colors.orange.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.quiz, color: Colors.orange, size: 28),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        quiz.title,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: isDarkMode ? AppColors.white : AppColors.black,
-                            ),
                       ),
-                      if (quiz.description != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          quiz.description!,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: isDarkMode ? AppColors.greyLight : AppColors.grey,
-                              ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                      if (quiz.questions != null && quiz.questions!.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.help_outline,
-                              size: 14,
-                              color: Colors.orange,
-                            ),
-                            const SizedBox(width: 4),
+                  child: const Icon(Icons.quiz, color: Colors.orange, size: 28),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            quiz.title,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: isDarkMode ? AppColors.white : AppColors.black,
+                                ),
+                          ),
+                          if (quiz.description != null) ...[
+                            const SizedBox(height: 4),
                             Text(
-                              '${quiz.questions!.length} questions',
-                              style: TextStyle(
-                                color: Colors.orange,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              quiz.description!,
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                                  ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
-                        ),
+                      if (quiz.questions != null && quiz.questions!.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                Row(
+                  children: [
+                            Icon(
+                            Icons.help_outline,
+                              size: 14,
+                            color: Colors.orange,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                              '${quiz.questions!.length} questions',
+                              style: TextStyle(
+                              color: Colors.orange,
+                                fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                       ],
-                    ],
-                  ),
-                ),
+                          ],
+                        ),
+                      ),
                 Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
+                        Icons.arrow_forward_ios,
+                        size: 16,
                   color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                    ),
+                  ],
                 ),
-              ],
             ),
           ),
         ),
-      ),
     );
   }
 
