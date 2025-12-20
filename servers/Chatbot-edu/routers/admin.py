@@ -3,11 +3,10 @@ Router pour les opérations administratives
 Endpoint POST /ingest pour l'indexation des documents
 """
 
-from fastapi import APIRouter, HTTPException, status, Body, Depends
+from fastapi import APIRouter, HTTPException, status, Body
 from app.models import IngestRequest, IngestResponse
 from services.ingest import ingest_documents
 from services.rag import reset_vectorstore_cache
-from auth.jwt_utils import get_current_user, require_role  # NEW
 import logging
 
 logger = logging.getLogger(__name__)
@@ -35,8 +34,6 @@ router = APIRouter(
     **Par défaut**, utilise les PDFs du dossier 'Cours' local
     (plus rapide pour le développement).
     
-    **Authentification requise** - Réservé aux enseignants et administrateurs
-    
     **Note:** Cette opération peut prendre plusieurs minutes selon le nombre de PDFs.
     """
 )
@@ -44,15 +41,13 @@ async def ingest(
     request: IngestRequest = Body(
         default=IngestRequest(use_local_pdfs=True),
         description="Paramètres d'ingestion"
-    ),
-    current_user: dict = Depends(require_role(["ROLE_TEACHER", "ROLE_ADMIN"]))  # NEW: Teacher/Admin only
+    )
 ) -> IngestResponse:
     """
     Endpoint pour lancer l'ingestion des documents
     
     Args:
         request: IngestRequest avec paramètres optionnels
-        current_user: User info from JWT token
         
     Returns:
         IngestResponse: Statistiques de l'ingestion
@@ -61,7 +56,7 @@ async def ingest(
         HTTPException: Si erreur MinIO, parsing PDF, ou autre
     """
     try:
-        logger.info(f"🚀 Ingestion lancée par {current_user['email']} (user ID: {current_user['userId']})")
+        logger.info(f"🚀 Ingestion lancée")
         logger.info(f"   Mode: {'PDFs locaux' if request.use_local_pdfs else 'MinIO'}")
         
         # Lancer l'ingestion

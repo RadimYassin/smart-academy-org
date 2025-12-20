@@ -36,7 +36,7 @@ class _LessonLearningScreenState extends State<LessonLearningScreen> {
     _currentContentIndex = widget.initialContentIndex ?? 0;
     // Defer loading until after the build phase to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadLessonContent();
+    _loadLessonContent();
     });
   }
 
@@ -1043,14 +1043,14 @@ class _LessonLearningScreenState extends State<LessonLearningScreen> {
         );
         
         if (!launchedExternal) {
-          Get.snackbar(
+    Get.snackbar(
             'Error',
             'Could not open URL: $url',
-            snackPosition: SnackPosition.TOP,
+      snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.red.withOpacity(0.8),
-            colorText: Colors.white,
+      colorText: Colors.white,
             duration: const Duration(seconds: 3),
-          );
+    );
         }
       }
     } catch (e) {

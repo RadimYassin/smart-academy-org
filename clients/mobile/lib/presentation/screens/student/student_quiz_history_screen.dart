@@ -75,6 +75,48 @@ class _StudentQuizHistoryScreenState extends State<StudentQuizHistoryScreen> {
     }
   }
 
+  Future<void> _startNewQuiz() async {
+    if (widget.quizId == null) {
+      Get.snackbar('Error', 'Quiz ID is required');
+      return;
+    }
+
+    try {
+      final courseRepository = Get.find<CourseRepository>();
+      
+      // Show loading
+      Get.dialog(
+        const Center(child: CircularProgressIndicator()),
+        barrierDismissible: false,
+      );
+
+      // Start new quiz attempt
+      final attempt = await courseRepository.startQuizAttempt(widget.quizId!);
+      
+      // Close loading dialog
+      Get.back();
+      
+      // Navigate to attempt details screen
+      Get.to(() => StudentQuizDetailScreen(attemptId: attempt.id));
+      
+      // Refresh attempts list
+      _loadAttempts();
+    } catch (e) {
+      // Close loading dialog if still open
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+      
+      Get.snackbar(
+        'Error',
+        e.toString().replaceAll('Exception: ', ''),
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -94,6 +136,17 @@ class _StudentQuizHistoryScreenState extends State<StudentQuizHistoryScreen> {
         ],
       ),
       body: _buildBody(isDarkMode),
+      floatingActionButton: widget.quizId != null
+          ? FloatingActionButton.extended(
+              onPressed: _startNewQuiz,
+              backgroundColor: AppColors.onboardingContinue,
+              icon: const Icon(Icons.play_arrow, color: AppColors.white),
+              label: const Text(
+                'Start Quiz',
+                style: TextStyle(color: AppColors.white),
+              ),
+            )
+          : null,
     );
   }
 

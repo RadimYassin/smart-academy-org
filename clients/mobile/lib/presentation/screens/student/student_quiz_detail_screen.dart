@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../domain/repositories/course_repository.dart';
 import '../../../data/models/course/quiz_attempt.dart';
+import '../../../data/models/course/question.dart';
 import '../../widgets/loading_indicator.dart';
 
 class StudentQuizDetailScreen extends StatefulWidget {
@@ -20,7 +21,11 @@ class StudentQuizDetailScreen extends StatefulWidget {
 
 class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
   QuizAttempt? attempt;
+  List<Question> questions = [];
+  Map<String, String> selectedAnswers = {}; // questionId -> selectedOptionId
+  int currentQuestionIndex = 0; // Track current question
   bool isLoading = true;
+  bool isSubmitting = false;
   String? errorMessage;
 
   @override
@@ -41,6 +46,17 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
 
       setState(() {
         attempt = loadedAttempt;
+      });
+
+      // If attempt is not submitted, load questions
+      if (loadedAttempt.submittedAt == null) {
+        final loadedQuestions = await courseRepository.getQuestionsByQuiz(loadedAttempt.quizId);
+        setState(() {
+          questions = loadedQuestions;
+        });
+      }
+
+      setState(() {
         isLoading = false;
       });
     } catch (e) {
@@ -48,6 +64,91 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
         errorMessage = e.toString().replaceAll('Exception: ', '');
         isLoading = false;
       });
+    }
+  }
+
+  void _goToNextQuestion() {
+    if (currentQuestionIndex < questions.length - 1) {
+      setState(() {
+        currentQuestionIndex++;
+      });
+    }
+  }
+
+  Future<void> _submitQuiz() async {
+    if (attempt == null) return;
+
+    // Check if all questions are answered
+    if (selectedAnswers.length < questions.length) {
+      // Go to first unanswered question
+      for (int i = 0; i < questions.length; i++) {
+        if (!selectedAnswers.containsKey(questions[i].id)) {
+          setState(() {
+            currentQuestionIndex = i;
+          });
+          Get.snackbar(
+            'Incomplete Quiz',
+            'Please answer all questions before submitting.',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.orange.withOpacity(0.8),
+            colorText: Colors.white,
+          );
+          return;
+        }
+      }
+    }
+
+    try {
+      setState(() {
+        isSubmitting = true;
+      });
+
+      final courseRepository = Get.find<CourseRepository>();
+      
+      // Create answer submissions
+      final answerSubmissions = selectedAnswers.entries.map((entry) {
+        return AnswerSubmission(
+          questionId: entry.key,
+          selectedOptionId: entry.value,
+        );
+      }).toList();
+
+      final submitRequest = SubmitQuizAttemptRequest(answers: answerSubmissions);
+      
+      // Submit quiz
+      final submittedAttempt = await courseRepository.submitQuizAttempt(
+        widget.attemptId,
+        submitRequest,
+      );
+
+      // Reload attempt details to get results
+      final updatedAttempt = await courseRepository.getAttemptDetails(widget.attemptId);
+
+      setState(() {
+        attempt = updatedAttempt;
+        isSubmitting = false;
+      });
+
+      Get.snackbar(
+        'Quiz Submitted!',
+        'Your score: ${submittedAttempt.score}/${submittedAttempt.maxScore}',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.green.withOpacity(0.8),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e) {
+      setState(() {
+        isSubmitting = false;
+      });
+
+      Get.snackbar(
+        'Error',
+        e.toString().replaceAll('Exception: ', ''),
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
     }
   }
 
@@ -60,7 +161,7 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
       appBar: AppBar(
         backgroundColor: isDarkMode ? AppColors.primaryDark : AppColors.primary,
         foregroundColor: AppColors.white,
-        title: const Text('Attempt Details'),
+        title: Text(attempt?.submittedAt == null ? 'Take Quiz' : 'Attempt Details'),
       ),
       body: _buildBody(isDarkMode),
     );
@@ -120,6 +221,188 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
       );
     }
 
+    // If quiz is not submitted, show questions one by one
+    if (attempt!.submittedAt == null) {
+      if (questions.isEmpty) {
+        return Center(
+          child: Text(
+            'No questions available',
+            style: TextStyle(
+              color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+            ),
+          ),
+        );
+      }
+
+      final currentQuestion = questions[currentQuestionIndex];
+      final isFirstQuestion = currentQuestionIndex == 0;
+      final isLastQuestion = currentQuestionIndex == questions.length - 1;
+      final hasAnswered = selectedAnswers.containsKey(currentQuestion.id);
+
+      return Column(
+        children: [
+          // Progress Bar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            decoration: BoxDecoration(
+              color: isDarkMode ? AppColors.primaryDark : AppColors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Question ${currentQuestionIndex + 1} of ${questions.length}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: isDarkMode ? AppColors.white : AppColors.black,
+                      ),
+                    ),
+                    Text(
+                      attempt!.quizTitle,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: (currentQuestionIndex + 1) / questions.length,
+                    minHeight: 6,
+                    backgroundColor: isDarkMode
+                        ? AppColors.primaryLight.withOpacity(0.2)
+                        : AppColors.grey.withOpacity(0.2),
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Question Card
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: _buildQuestionCard(currentQuestion, currentQuestionIndex + 1, isDarkMode)
+                  .animate()
+                  .fadeIn(duration: 300.ms)
+                  .slideX(begin: 0.1, end: 0, duration: 300.ms),
+            ),
+          ),
+
+          // Navigation Buttons
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: isDarkMode ? AppColors.primaryDark : AppColors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, -4),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: Row(
+                children: [
+                  // Previous Button
+                  if (!isFirstQuestion)
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            currentQuestionIndex--;
+                          });
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: isDarkMode ? AppColors.white : AppColors.black,
+                          side: BorderSide(
+                            color: isDarkMode
+                                ? AppColors.border.withOpacity(0.2)
+                                : AppColors.border,
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.arrow_back, size: 20),
+                            SizedBox(width: 8),
+                            Text('Previous'),
+                          ],
+                        ),
+                      ),
+                    ),
+                  if (!isFirstQuestion) const SizedBox(width: 12),
+                  
+                  // Next/Submit Button
+                  Expanded(
+                    flex: isFirstQuestion ? 1 : 1,
+                    child: ElevatedButton(
+                      onPressed: isSubmitting
+                          ? null
+                          : (isLastQuestion ? _submitQuiz : _goToNextQuestion),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.onboardingContinue,
+                        foregroundColor: AppColors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: isSubmitting
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  isLastQuestion ? 'Submit Quiz' : 'Next',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                if (!isLastQuestion) ...[
+                                  const SizedBox(width: 8),
+                                  const Icon(Icons.arrow_forward, size: 20),
+                                ],
+                              ],
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // If quiz is submitted, show results
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -429,6 +712,163 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuestionCard(Question question, int questionNumber, bool isDarkMode) {
+    final selectedOptionId = selectedAnswers[question.id];
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDarkMode ? AppColors.primaryDark : AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDarkMode
+              ? AppColors.border.withValues(alpha: 0.2)
+              : AppColors.border,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    '$questionNumber',
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  question.questionText,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? AppColors.white : AppColors.black,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (question.options != null && question.options!.isNotEmpty) ...[
+            ...question.options!.map((option) {
+              final isSelected = selectedOptionId == option.id;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      setState(() {
+                        selectedAnswers[question.id] = option.id;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Colors.orange.withOpacity(0.1)
+                            : (isDarkMode
+                                ? AppColors.primaryLight.withOpacity(0.1)
+                                : AppColors.grey.withOpacity(0.05)),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected
+                              ? Colors.orange
+                              : (isDarkMode
+                                  ? AppColors.border.withValues(alpha: 0.2)
+                                  : AppColors.border),
+                          width: isSelected ? 2 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected
+                                    ? Colors.orange
+                                    : (isDarkMode
+                                        ? AppColors.greyLight
+                                        : AppColors.grey),
+                                width: 2,
+                              ),
+                              color: isSelected
+                                  ? Colors.orange
+                                  : Colors.transparent,
+                            ),
+                            child: isSelected
+                                ? const Icon(
+                                    Icons.check,
+                                    size: 16,
+                                    color: AppColors.white,
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              option.optionText,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: isDarkMode ? AppColors.white : AppColors.black,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ] else ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDarkMode
+                    ? AppColors.primaryLight.withOpacity(0.1)
+                    : AppColors.grey.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'No options available',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

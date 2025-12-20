@@ -328,31 +328,31 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
         children: [
           // Progress Section
           if (totalLessons > 0) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
                       'Your Progress',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
+                                              fontWeight: FontWeight.bold,
                             color: isDarkMode ? AppColors.white : AppColors.black,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
+                                            ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
                       '$completedLessons of $totalLessons lessons',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: isDarkMode ? AppColors.greyLight : AppColors.grey,
-                          ),
-                    ),
-                  ],
-                ),
-                Container(
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                  Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
+                    decoration: BoxDecoration(
                     color: AppColors.onboardingContinue.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -362,10 +362,10 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: AppColors.onboardingContinue,
-                    ),
-                  ),
-                ),
-              ],
+                              ),
+                            ),
+                          ),
+                        ],
             ),
             const SizedBox(height: 16),
             ClipRRect(
@@ -377,28 +377,28 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
                     ? AppColors.primaryLight.withOpacity(0.2)
                     : AppColors.grey.withOpacity(0.2),
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.onboardingContinue),
-              ),
-            ),
+                      ),
+                    ),
             const SizedBox(height: 20),
             const Divider(),
             const SizedBox(height: 16),
           ],
 
-          // Course Description
-          Text(
-            'About this course',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+                // Course Description
+                        Text(
+                          'About this course',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
                   color: isDarkMode ? AppColors.white : AppColors.black,
-                ),
-          ),
-          const SizedBox(height: 12),
+                              ),
+                    ),
+                    const SizedBox(height: 12),
           Text(
-            course.description,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                        course.description,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: isDarkMode ? AppColors.greyLight : AppColors.grey,
                   height: 1.6,
-                ),
+            ),
           ),
         ],
       ),
@@ -436,21 +436,21 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       child: ElevatedButton.icon(
         onPressed: () {
-          // Navigate to lesson learning screen
-          Get.toNamed(
-            '/student/lessons/$nextLessonId',
-            arguments: {
-              'courseId': widget.courseId,
-              'lessonId': nextLessonId,
-              'moduleId': nextModuleId,
-            },
-          );
-        },
+            // Navigate to lesson learning screen
+            Get.toNamed(
+              '/student/lessons/$nextLessonId',
+              arguments: {
+                'courseId': widget.courseId,
+                'lessonId': nextLessonId,
+                'moduleId': nextModuleId,
+              },
+            );
+          },
         icon: const Icon(Icons.play_arrow, size: 24),
         label: const Text(
-          'Continue Learning',
+                        'Continue Learning',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
+                      ),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.onboardingContinue,
           foregroundColor: AppColors.white,
@@ -607,13 +607,13 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
             ),
             child: Center(
               child: Text(
-                '$moduleNumber',
+                      '$moduleNumber',
                 style: TextStyle(
                   color: AppColors.onboardingContinue,
-                  fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                   fontSize: 16,
-                ),
-              ),
+                      ),
+                    ),
             ),
           ),
           title: Text(
@@ -935,79 +935,86 @@ class _StudentCourseViewScreenState extends State<StudentCourseViewScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            Get.snackbar('Info', 'Quiz functionality coming soon');
+            // Navigate to quiz screen
+            Get.toNamed(
+              '/student/quizzes/${quiz.id}',
+              arguments: {
+                'quizTitle': quiz.title,
+                'quizDescription': quiz.description,
+              },
+            );
           },
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
-              children: [
-                Container(
+                  children: [
+                    Container(
                   width: 50,
                   height: 50,
-                  decoration: BoxDecoration(
+                      decoration: BoxDecoration(
                     color: Colors.orange.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.quiz, color: Colors.orange, size: 28),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        quiz.title,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: isDarkMode ? AppColors.white : AppColors.black,
-                            ),
                       ),
-                      if (quiz.description != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          quiz.description!,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: isDarkMode ? AppColors.greyLight : AppColors.grey,
-                              ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                      if (quiz.questions != null && quiz.questions!.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.help_outline,
-                              size: 14,
-                              color: Colors.orange,
-                            ),
-                            const SizedBox(width: 4),
+                  child: const Icon(Icons.quiz, color: Colors.orange, size: 28),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            quiz.title,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: isDarkMode ? AppColors.white : AppColors.black,
+                                ),
+                          ),
+                          if (quiz.description != null) ...[
+                            const SizedBox(height: 4),
                             Text(
-                              '${quiz.questions!.length} questions',
-                              style: TextStyle(
-                                color: Colors.orange,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              quiz.description!,
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                                  ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
-                        ),
+                      if (quiz.questions != null && quiz.questions!.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                Row(
+                  children: [
+                            Icon(
+                            Icons.help_outline,
+                              size: 14,
+                            color: Colors.orange,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                              '${quiz.questions!.length} questions',
+                              style: TextStyle(
+                              color: Colors.orange,
+                                fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                       ],
-                    ],
-                  ),
-                ),
+                          ],
+                        ),
+                      ),
                 Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
+                        Icons.arrow_forward_ios,
+                        size: 16,
                   color: isDarkMode ? AppColors.greyLight : AppColors.grey,
+                    ),
+                  ],
                 ),
-              ],
             ),
           ),
         ),
-      ),
     );
   }
 

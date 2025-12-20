@@ -48,6 +48,17 @@ dependencies:
   
   # URL Launcher
   url_launcher: ^6.3.1
+  
+  # Audio Recording
+  record: ^5.1.2
+  path_provider: ^2.1.4
+  permission_handler: ^11.3.1
+  audioplayers: ^6.1.0
+  speech_to_text: ^7.0.0
+  flutter_tts: ^4.0.2
+  
+  # Image Picker
+  image_picker: ^1.0.7
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +69,9 @@ dev_dependencies:
   build_runner: ^2.4.12
   injectable_generator: ^2.6.2
   json_serializable: ^6.8.0
+
+dependency_overrides:
+  record_linux: ^1.2.1
 
 flutter:
   uses-material-design: true

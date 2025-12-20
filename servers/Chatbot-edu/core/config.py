@@ -3,7 +3,7 @@ Configuration centralisée pour EduBot
 Utilise Pydantic Settings pour la validation des variables d'environnement
 """
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 from typing import Literal
 
@@ -53,10 +53,20 @@ class Settings(BaseSettings):
     app_version: str = Field(default="1.0.0", description="Version de l'app")
     temp_pdf_dir: str = Field(default="./temp_pdfs", description="Dossier temporaire pour PDFs")
     
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    # === Service Configuration ===
+    service_port: int = Field(default=8005, description="Port du service")
+    service_host: str = Field(default="0.0.0.0", description="Host du service")
+    
+    # === Eureka Configuration ===
+    eureka_server_url: str = Field(default="http://localhost:8761/eureka", description="URL du serveur Eureka")
+    eureka_instance_hostname: str = Field(default="localhost", description="Hostname pour l'instance Eureka")
+    
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",  # Ignore extra fields instead of raising validation error
+    )
 
 
 # Instance globale des settings

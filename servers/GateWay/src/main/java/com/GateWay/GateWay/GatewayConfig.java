@@ -15,19 +15,25 @@ public class GatewayConfig {
                 .route("user-management", r -> r
                         .path("/user-management-service/**")
                         .filters(f -> f.stripPrefix(1))
-                        .uri("http://user-management-service:8082"))
+                        .uri("http://localhost:8082"))
 
                 // Course Management Service
                 .route("course-management", r -> r
                         .path("/course-service/**")
                         .filters(f -> f.stripPrefix(1))
-                        .uri("http://course-management-service:8081"))
+                        .uri("http://localhost:8081"))
 
                 // LMS Connector Service
                 .route("lms-connector", r -> r
                         .path("/lmsconnector/**")
                         .filters(f -> f.stripPrefix(1))
                         .uri("http://lms-connector-service:3000"))
+
+                // Chatbot-edu Service
+                .route("chatbot-edu", r -> r
+                        .path("/chatbot-edu-service/**")
+                        .filters(f -> f.stripPrefix(1))
+                        .uri("http://localhost:8005"))
 
                 .build();
     }

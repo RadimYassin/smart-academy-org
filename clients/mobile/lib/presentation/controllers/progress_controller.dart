@@ -66,13 +66,13 @@ class ProgressController extends GetxController {
       } catch (creditError) {
         // If credit reward fails, still show success for lesson completion
         Logger.logError('Failed to reward credits', error: creditError);
-        Get.snackbar(
-          'Success',
-          'Lesson marked as complete!',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Get.theme.colorScheme.primary.withOpacity(0.8),
-          colorText: Get.theme.colorScheme.onPrimary,
-        );
+      Get.snackbar(
+        'Success',
+        'Lesson marked as complete!',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Get.theme.colorScheme.primary.withOpacity(0.8),
+        colorText: Get.theme.colorScheme.onPrimary,
+      );
       }
     } catch (e) {
       Logger.logError('Mark lesson complete error', error: e);

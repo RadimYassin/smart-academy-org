@@ -24,6 +24,8 @@ import '../screens/student/student_explore_screen.dart';
 import '../screens/student/student_course_view_screen.dart';
 import '../screens/student/student_home_screen.dart';
 import '../screens/student/lesson_learning_screen.dart';
+import '../screens/student/student_quiz_history_screen.dart';
+import '../screens/student/student_quiz_screen.dart';
 import '../controllers/bindings/signin_binding.dart';
 import '../controllers/bindings/signup_binding.dart';
 import '../controllers/bindings/dashboard_binding.dart';
@@ -69,6 +71,8 @@ class AppRoutes {
   static const String studentExplore = '/student/explore';
   static const String studentCourseView = '/student/courses/:courseId';
   static const String lessonLearning = '/student/lessons/:lessonId';
+  static const String studentQuiz = '/student/quizzes/:quizId';
+  static const String studentQuizHistory = '/student/quizzes/:quizId/history';
   
   static final List<GetPage> routes = [
     GetPage(
@@ -207,6 +211,34 @@ class AppRoutes {
           lessonId: lessonId,
           moduleId: moduleId,
           initialContentIndex: contentIndex,
+        );
+      },
+      binding: CoursesBinding(),
+    ),
+    GetPage(
+      name: studentQuiz,
+      page: () {
+        final quizId = Get.parameters['quizId'] ?? '';
+        final args = Get.arguments as Map<String, dynamic>? ?? {};
+        final quizTitle = args['quizTitle'] as String? ?? 'Quiz';
+        final quizDescription = args['quizDescription'] as String?;
+        return StudentQuizScreen(
+          quizId: quizId,
+          quizTitle: quizTitle,
+          quizDescription: quizDescription,
+        );
+      },
+      binding: CoursesBinding(),
+    ),
+    GetPage(
+      name: studentQuizHistory,
+      page: () {
+        final quizId = Get.parameters['quizId'] ?? '';
+        final args = Get.arguments as Map<String, dynamic>? ?? {};
+        final quizTitle = args['quizTitle'] as String?;
+        return StudentQuizHistoryScreen(
+          quizId: quizId,
+          quizTitle: quizTitle,
         );
       },
       binding: CoursesBinding(),
