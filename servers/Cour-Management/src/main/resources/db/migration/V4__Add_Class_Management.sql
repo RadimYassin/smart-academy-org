@@ -83,14 +83,7 @@ CREATE INDEX idx_certificates_course ON certificates(course_id);
 CREATE INDEX idx_certificates_verification ON certificates(verification_code);
 
 -- 6. Update quizzes table to add passingScore and mandatory fields
-ALTER TABLE quizzes 
-ADD COLUMN passing_score INTEGER DEFAULT 60,
-ADD COLUMN mandatory BOOLEAN DEFAULT false;
+-- Split into separate statements for H2 compatibility
+ALTER TABLE quizzes ADD COLUMN passing_score INTEGER DEFAULT 60;
+ALTER TABLE quizzes ADD COLUMN mandatory BOOLEAN DEFAULT false;
 
-COMMENT ON TABLE classes IS 'Student groups/classes managed by teachers';
-COMMENT ON TABLE class_students IS 'Students belonging to a class';
-COMMENT ON TABLE enrollments IS 'Course enrollments for students or entire classes';
-COMMENT ON TABLE lesson_progress IS 'Tracks student progress through lessons';
-COMMENT ON TABLE certificates IS 'Course completion certificates';
-COMMENT ON COLUMN quizzes.passing_score IS 'Percentage required to pass the quiz (e.g., 60)';
-COMMENT ON COLUMN quizzes.mandatory IS 'Whether quiz must be passed to earn certificate';
