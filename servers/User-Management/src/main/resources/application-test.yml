@@ -1,0 +1,54 @@
+# Test Configuration
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+  
+  # Email Configuration (Mock for tests)
+  mail:
+    host: smtp.test.com
+    port: 587
+    username: test@test.com
+    password: testpassword
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+  
+  # RabbitMQ Configuration (Disabled for tests)
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+# Application Configuration
+application:
+  security:
+    jwt:
+      secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      expiration: 86400000
+      refresh-token:
+        expiration: 604800000
+  mail:
+    from: noreply@smart-academy.com
+    from-name: Smart Academy Test
+
+# Eureka (Disabled for tests)
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
