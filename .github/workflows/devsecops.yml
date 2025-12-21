@@ -101,6 +101,7 @@ jobs:
           cd servers/User-Management
           mvn -B verify sonar:sonar \
             -Dsonar.projectKey=smart-academy-user-management \
+            -Dsonar.projectName="User-Management" \
             -Dsonar.organization=smart-academy-org \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.qualitygate.wait=false
@@ -113,6 +114,7 @@ jobs:
           cd servers/Cour-Management
           mvn -B verify sonar:sonar \
             -Dsonar.projectKey=smart-academy-course-management \
+            -Dsonar.projectName="Course-Management" \
             -Dsonar.organization=smart-academy-org \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.qualitygate.wait=false
