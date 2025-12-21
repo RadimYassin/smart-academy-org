@@ -4,7 +4,7 @@ This is a Spring Boot 3 microservice for User Management, featuring JWT authenti
 
 ## 🚀 Quick Start (Docker)
 
-The easiest way to run the application is using Docker Compose, which sets up both the application and the PostgreSQL database.
+The eas iest way to run the application is using Docker Compose, which sets up both the application and the PostgreSQL database.
 
 ### Prerequisites
 - Docker and Docker Compose installed.
