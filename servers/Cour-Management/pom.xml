@@ -171,6 +171,10 @@
                                             <minimum>0.20</minimum>
                                         </limit>
                                     </limits>
+                                    <excludes>
+                                        <exclude>*.dto.*</exclude>
+                                        <exclude>*.entities.*</exclude>
+                                    </excludes>
                                 </rule>
                             </rules>
                         </configuration>

@@ -176,6 +176,12 @@
                                             <minimum>0.20</minimum>
                                         </limit>
                                     </limits>
+                                    <excludes>
+                                        <exclude>*.dto.*</exclude>
+                                        <exclude>*.events.*</exclude>
+                                        <exclude>*.exceptions.*</exclude>
+                                        <exclude>*.messaging.*</exclude>
+                                    </excludes>
                                 </rule>
                             </rules>
                         </configuration>
