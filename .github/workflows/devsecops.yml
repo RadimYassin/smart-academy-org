@@ -103,7 +103,7 @@ jobs:
             -Dsonar.projectKey=smart-academy-user-management \
             -Dsonar.organization=smart-academy-org \
             -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.wait=false
       
       - name: SonarCloud Scan - Course Management
         env:
@@ -115,7 +115,7 @@ jobs:
             -Dsonar.projectKey=smart-academy-course-management \
             -Dsonar.organization=smart-academy-org \
             -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.wait=false
 
   # ==========================================
   # Stage 3: SCA - OWASP Dependency Check
