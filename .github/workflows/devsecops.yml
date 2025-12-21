@@ -118,7 +118,7 @@ jobs:
             -Dsonar.qualitygate.wait=false
 
   # ==========================================
-  # Stage 3: SCA - OWASP Dependency Check
+  # Stage 3: SCA -   OWASP Dependency Check
   # ==========================================
   dependency-check:
     name: OWASP Dependency Check (SCA)
