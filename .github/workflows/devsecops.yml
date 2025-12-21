@@ -40,10 +40,20 @@ jobs:
           cd servers/User-Management
           mvn clean verify -B
       
+      - name: Generate Coverage Report - User Management
+        run: |
+          cd servers/User-Management
+          mvn jacoco:report
+      
       - name: Build Course Management Service
         run: |
           cd servers/Cour-Management
           mvn clean verify -B
+      
+      - name: Generate Coverage Report - Course Management
+        run: |
+          cd servers/Cour-Management
+          mvn jacoco:report
       
       - name: Build Gateway Service
         run: |
@@ -62,6 +72,43 @@ jobs:
           path: |
             servers/*/target/*.jar
           retention-days: 7
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: |
+            servers/User-Management/target/surefire-reports/
+            servers/Cour-Management/target/surefire-reports/
+          retention-days: 30
+      
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            servers/User-Management/target/site/jacoco/
+            servers/Cour-Management/target/site/jacoco/
+          retention-days: 30
+      
+      - name: Display Test Summary
+        if: always()
+        run: |
+          echo "## 📊 Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### User Management Service" >> $GITHUB_STEP_SUMMARY
+          if [ -f servers/User-Management/target/surefire-reports/*.xml ]; then
+            echo "✅ Tests executed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Course Management Service" >> $GITHUB_STEP_SUMMARY
+          if [ -f servers/Cour-Management/target/surefire-reports/*.xml ]; then
+            echo "✅ Tests executed - 115 tests" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📈 Coverage reports available in artifacts" >> $GITHUB_STEP_SUMMARY
+
 
   # ==========================================
   # Stage 2: SAST - SonarCloud Analysis

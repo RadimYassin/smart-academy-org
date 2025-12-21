@@ -1,6 +1,8 @@
 package radim.ma;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -16,6 +18,12 @@ class UserManagementApplicationTests {
 
     @MockBean
     private RabbitTemplate rabbitTemplate;
+
+    @MockBean
+    private RabbitAdmin rabbitAdmin;
+
+    @MockBean
+    private ConnectionFactory connectionFactory;
 
     @Test
     void contextLoads() {
