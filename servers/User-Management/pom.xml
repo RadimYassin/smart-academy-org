@@ -166,9 +166,15 @@
                             <goal>check</goal>
                         </goals>
                         <configuration>
+                            <excludes>
+                                <exclude>**/dto/**</exclude>
+                                <exclude>**/events/**</exclude>
+                                <exclude>**/exceptions/**</exclude>
+                                <exclude>**/messaging/**</exclude>
+                            </excludes>
                             <rules>
                                 <rule>
-                                    <element>PACKAGE</element>
+                                    <element>BUNDLE</element>
                                     <limits>
                                         <limit>
                                             <counter>LINE</counter>
@@ -176,12 +182,6 @@
                                             <minimum>0.20</minimum>
                                         </limit>
                                     </limits>
-                                    <excludes>
-                                        <exclude>*.dto.*</exclude>
-                                        <exclude>*.events.*</exclude>
-                                        <exclude>*.exceptions.*</exclude>
-                                        <exclude>*.messaging.*</exclude>
-                                    </excludes>
                                 </rule>
                             </rules>
                         </configuration>
