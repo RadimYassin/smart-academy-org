@@ -331,9 +331,8 @@ jobs:
         if: always()
         with:
           image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.image }}:latest
-          format: 'template'
-          template: '@/contrib/html.tpl'
-          output: 'trivy-report-${{ matrix.service.name }}.html'
+          format: 'table'
+          output: 'trivy-report-${{ matrix.service.name }}.txt'
           severity: 'CRITICAL,HIGH,MEDIUM,LOW'
       
       - name: Upload Trivy Report
@@ -341,7 +340,7 @@ jobs:
         if: always()
         with:
           name: trivy-report-${{ matrix.service.name }}
-          path: trivy-report-${{ matrix.service.name }}.html
+          path: trivy-report-${{ matrix.service.name }}.txt
           retention-days: 30
 
   # ==========================================
