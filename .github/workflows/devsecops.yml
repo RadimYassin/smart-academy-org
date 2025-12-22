@@ -10,6 +10,7 @@ on:
 permissions:
   contents: read
   security-events: write  # Required for Trivy SARIF upload
+  actions: read  # Required for CodeQL telemetry
 
 env:
   JAVA_VERSION: '17'
@@ -218,9 +219,12 @@ jobs:
       
       - name: Upload Dependency Check Reports
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: dependency-check-reports
-          path: reports/
+          path: |
+            servers/User-Management/target/dependency-check-report.*
+            servers/Cour-Management/target/dependency-check-report.*
           retention-days: 30
 
   # ==========================================
@@ -234,6 +238,7 @@ jobs:
       contents: read
     
     strategy:
+      fail-fast: false  # Continue with other services even if one fails
       matrix:
         service:
           - name: user-management
@@ -292,6 +297,7 @@ jobs:
       security-events: write
     
     strategy:
+      fail-fast: false  # Continue with other services even if one fails
       matrix:
         service:
           - name: user-management
@@ -325,7 +331,7 @@ jobs:
           exit-code: '0'  # Report but don't fail pipeline
       
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: 'trivy-results-${{ matrix.service.name }}.sarif'
@@ -359,6 +365,7 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     
     strategy:
+      fail-fast: false  # Continue with other services even if one fails
       matrix:
         service:
           - name: user-management
