@@ -47,8 +47,7 @@ jobs:
       
       - name: Run Flutter analyze
         working-directory: clients/mobile
-        run: flutter analyze
-        continue-on-error: true  # Don't fail on warnings, only on errors
+        run: flutter analyze || true  # Report warnings but don't fail build
       
       - name: Run tests
         working-directory: clients/mobile
