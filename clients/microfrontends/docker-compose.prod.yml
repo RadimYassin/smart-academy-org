@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  # Shell (Host Application) - Port 5001
+  shell:
+    image: ${DOCKERHUB_USERNAME}/smart-academy-shell:latest
+    container_name: smart-academy-shell
+    ports:
+      - "5001:80"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health" ]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - microfrontend-network
+    labels:
+      - "com.smart-academy.service=shell"
+      - "com.smart-academy.description=Main host application"
+
+  # Auth Microfrontend - Port 5002
+  auth:
+    image: ${DOCKERHUB_USERNAME}/smart-academy-auth:latest
+    container_name: smart-academy-auth
+    ports:
+      - "5002:80"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health" ]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - microfrontend-network
+    labels:
+      - "com.smart-academy.service=auth"
+      - "com.smart-academy.description=Authentication microfrontend"
+
+  # Dashboard Microfrontend - Port 5003
+  dashboard:
+    image: ${DOCKERHUB_USERNAME}/smart-academy-dashboard:latest
+    container_name: smart-academy-dashboard
+    ports:
+      - "5003:80"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health" ]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - microfrontend-network
+    labels:
+      - "com.smart-academy.service=dashboard"
+      - "com.smart-academy.description=Dashboard with analytics"
+
+  # Courses Microfrontend - Port 5004
+  courses:
+    image: ${DOCKERHUB_USERNAME}/smart-academy-courses:latest
+    container_name: smart-academy-courses
+    ports:
+      - "5004:80"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health" ]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - microfrontend-network
+    labels:
+      - "com.smart-academy.service=courses"
+      - "com.smart-academy.description=Courses management microfrontend"
+
+networks:
+  microfrontend-network:
+    driver: bridge
+    name: smart-academy-microfrontends

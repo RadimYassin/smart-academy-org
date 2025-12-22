@@ -1,0 +1,270 @@
+name: Flutter Mobile CI/CD
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'clients/mobile/**'
+      - '.github/workflows/flutter-ci.yml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'clients/mobile/**'
+      - '.github/workflows/flutter-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  FLUTTER_VERSION: '3.9.2'
+
+jobs:
+  # ==========================================
+  # Stage 1: Analyze & Test
+  # ==========================================
+  analyze-and-test:
+    name: Analyze & Test Flutter App
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+      
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+      
+      - name: Install dependencies
+        working-directory: clients/mobile
+        run: flutter pub get
+      
+      - name: Verify Flutter installation
+        run: flutter doctor -v
+      
+      - name: Run Flutter analyze
+        working-directory: clients/mobile
+        run: flutter analyze
+      
+      - name: Run tests
+        working-directory: clients/mobile
+        run: flutter test --coverage
+      
+      - name: Upload test coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: clients/mobile/coverage/
+          retention-days: 30
+      
+      - name: Display test summary
+        if: always()
+        run: |
+          echo "## 📊 Flutter Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Analysis completed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Tests executed" >> $GITHUB_STEP_SUMMARY
+          echo "📈 Coverage report available in artifacts" >> $GITHUB_STEP_SUMMARY
+
+  # ==========================================
+  # Stage 2: Build Android
+  # ==========================================
+  build-android:
+    name: Build Android App
+    runs-on: ubuntu-latest
+    needs: analyze-and-test
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+      
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+      
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+      
+      - name: Install dependencies
+        working-directory: clients/mobile
+        run: flutter pub get
+      
+      - name: Build APK (Debug)
+        working-directory: clients/mobile
+        run: flutter build apk --debug
+      
+      - name: Build App Bundle (Release)
+        working-directory: clients/mobile
+        run: flutter build appbundle --release --no-tree-shake-icons
+        continue-on-error: true  # May fail without signing keys
+      
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: clients/mobile/build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
+      
+      - name: Upload App Bundle artifact
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: android-bundle
+          path: clients/mobile/build/app/outputs/bundle/release/*.aab
+          retention-days: 30
+
+  # ==========================================
+  # Stage 3: Build Web
+  # ==========================================
+  build-web:
+    name: Build Web App
+    runs-on: ubuntu-latest
+    needs: analyze-and-test
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+      
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+      
+      - name: Install dependencies
+        working-directory: clients/mobile
+        run: flutter pub get
+      
+      - name: Build Web App
+        working-directory: clients/mobile
+        run: flutter build web --release
+      
+      - name: Upload Web build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: clients/mobile/build/web/
+          retention-days: 30
+      
+      - name: Display Web build info
+        run: |
+          echo "## 🌐 Web Build Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Web app built successfully and available in artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "Deploy to hosting service (Firebase, Netlify, Vercel, etc.)" >> $GITHUB_STEP_SUMMARY
+
+  # ==========================================
+  # Stage 4: Build Windows (Optional)
+  # ==========================================
+  build-windows:
+    name: Build Windows App
+    runs-on: windows-latest
+    needs: analyze-and-test
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+      
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+      
+      - name: Install dependencies
+        working-directory: clients/mobile
+        run: flutter pub get
+      
+      - name: Build Windows App
+        working-directory: clients/mobile
+        run: flutter build windows --release
+      
+      - name: Upload Windows build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: clients/mobile/build/windows/x64/runner/Release/
+          retention-days: 30
+
+  # ==========================================
+  # Stage 5: Build Linux (Optional)
+  # ==========================================
+  build-linux:
+    name: Build Linux App
+    runs-on: ubuntu-latest
+    needs: analyze-and-test
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+      
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+      
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+      
+      - name: Install dependencies
+        working-directory: clients/mobile
+        run: flutter pub get
+      
+      - name: Build Linux App
+        working-directory: clients/mobile
+        run: flutter build linux --release
+      
+      - name: Upload Linux build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: clients/mobile/build/linux/x64/release/bundle/
+          retention-days: 30
+
+  # ==========================================
+  # Pipeline Summary
+  # ==========================================
+  pipeline-summary:
+    name: Flutter Pipeline Summary
+    runs-on: ubuntu-latest
+    needs: [analyze-and-test, build-android, build-web]
+    if: always()
+    
+    steps:
+      - name: Pipeline Status Summary
+        run: |
+          echo "## 📱 Flutter Mobile CI/CD Summary"
+          echo ""
+          echo "✅ Analyze & Test: ${{ needs.analyze-and-test.result }}"
+          echo "✅ Build Android: ${{ needs.build-android.result }}"
+          echo "✅ Build Web: ${{ needs.build-web.result }}"
+          echo ""
+          echo "### 📦 Artifacts Available:"
+          echo "- Android APK (Debug)"
+          echo "- Android App Bundle (Release)"
+          echo "- Web Build"
+          echo "- Coverage Report"
+          echo ""
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Run Number: ${{ github.run_number }}"
+          echo "Commit SHA: ${{ github.sha }}"
