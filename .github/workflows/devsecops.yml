@@ -295,6 +295,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
+      actions: read  # Required for CodeQL telemetry
     
     strategy:
       fail-fast: false  # Continue with other services even if one fails
