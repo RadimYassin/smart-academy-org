@@ -181,6 +181,13 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- SonarQube Plugin for SAST -->
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.10.0.2594</version>
+            </plugin>
         </plugins>
     </build>
 
