@@ -333,6 +333,7 @@ jobs:
       
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true  # Optional: Won't fail if Code Scanning is not enabled
         if: always()
         with:
           sarif_file: 'trivy-results-${{ matrix.service.name }}.sarif'
