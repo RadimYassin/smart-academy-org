@@ -83,6 +83,24 @@ jobs:
           path: ${{ matrix.service.path }}/coverage/
           retention-days: 30
       
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: ${{ matrix.service.path }}
+          args: >
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+            -Dsonar.projectKey=smart-academy-${{ matrix.service.name }}
+            -Dsonar.projectName=Smart Academy - ${{ matrix.service.name }}
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.sources=src
+            -Dsonar.tests=src
+            -Dsonar.test.inclusions=**/*.test.ts,**/*.test.tsx,**/__tests__/**
+            -Dsonar.exclusions=**/*.test.ts,**/*.test.tsx,**/__tests__/**,**/node_modules/**,**/dist/**,**/coverage/**
+            -Dsonar.typescript.tsconfigPath=tsconfig.json
+      
       - name: Build production bundle
         working-directory: ${{ matrix.service.path }}
         run: npm run build
