@@ -30,7 +30,7 @@ spring:
             
         # LMS Connector Service Routes
         - id: lms-connector
-          uri: http://lms-connector-service:3000
+          uri: http://localhost:3000
           predicates:
             - Path=/lmsconnector/**
           filters:
@@ -41,6 +41,38 @@ spring:
           uri: http://localhost:8005
           predicates:
             - Path=/chatbot-edu-service/**
+          filters:
+            - StripPrefix=1
+        
+        # PrepaData AI Service Routes
+        - id: prepadata-service
+          uri: lb://PREPADATA-SERVICE
+          predicates:
+            - Path=/prepadata-service/**
+          filters:
+            - StripPrefix=1
+        
+        # StudentProfiler AI Service Routes
+        - id: studentprofiler-service
+          uri: lb://STUDENTPROFILER-SERVICE
+          predicates:
+            - Path=/studentprofiler-service/**
+          filters:
+            - StripPrefix=1
+        
+        # PathPredictor AI Service Routes
+        - id: pathpredictor-service
+          uri: lb://PATHPREDICTOR-SERVICE
+          predicates:
+            - Path=/pathpredictor-service/**
+          filters:
+            - StripPrefix=1
+        
+        # RecoBuilder AI Service Routes
+        - id: recobuilder-service
+          uri: lb://RECOBUILDER-SERVICE
+          predicates:
+            - Path=/recobuilder-service/**
           filters:
             - StripPrefix=1
       
