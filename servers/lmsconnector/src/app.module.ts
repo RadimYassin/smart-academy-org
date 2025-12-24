@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Enrollment } from './modules/ingestion/entities/enrollment.entity';
 import { Student } from './modules/ingestion/entities/student.entity';
 import { RowData } from './modules/ingestion/entities/raw-data.entity';
+import { AIStudentData } from './modules/ingestion/entities/ai-student-data.entity';
 import { IngestionModule } from './modules/ingestion/ingestion.module';
 import { AuthModule } from './auth/auth.module';
 import { EurekaModule } from './modules/eureka/eureka.module';
@@ -25,7 +26,7 @@ import eurekaConfig from './config/eureka.config';
       username: process.env.DATABASE_USER || 'postgres',
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME || 'lmsconnector',
-      entities: [RowData, Student, Enrollment],
+      entities: [RowData, Student, Enrollment, AIStudentData],
       synchronize: true, // Set to false in production!
     }),
     AuthModule,

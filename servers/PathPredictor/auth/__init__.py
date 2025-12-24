@@ -1,1 +1,0 @@
-# PathPredictor Service - Auth Module

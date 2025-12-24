@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # PostgreSQL - Base de données
+  postgres:
+    image: postgres:15
+    container_name: edupath_postgres
+    environment:
+      POSTGRES_USER: edupath_user
+      POSTGRES_PASSWORD: edupath_password
+      POSTGRES_DB: edupath_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edupath_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MLflow - Tracking des modèles ML
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: edupath_mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      BACKEND_STORE_URI: postgresql://edupath_user:edupath_password@postgres:5432/edupath_db
+      ARTIFACT_ROOT: /mlflow/artifacts
+    volumes:
+      - mlflow_artifacts:/mlflow/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      mlflow server
+      --backend-store-uri postgresql://edupath_user:edupath_password@postgres:5432/edupath_db
+      --default-artifact-root /mlflow/artifacts
+      --host 0.0.0.0
+      --port 5000
+
+  # Airflow - Orchestration du pipeline
+  airflow:
+    image: apache/airflow:2.7.0
+    container_name: edupath_airflow
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql://edupath_user:edupath_password@postgres:5432/edupath_db
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__WEBSERVER__SECRET_KEY: 'edupath_secret_key_change_this'
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./src:/opt/airflow/src
+      - ./data:/opt/airflow/data
+      - ./outputs:/opt/airflow/outputs
+      - airflow_logs:/opt/airflow/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      bash -c "airflow db init &&
+               airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@edupath.com &&
+               airflow webserver & airflow scheduler"
+
+volumes:
+  postgres_data:
+  mlflow_artifacts:
+  airflow_logs:

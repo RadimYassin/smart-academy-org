@@ -273,6 +273,93 @@ services:
       retries: 5
       start_period: 60s
 
+  # PrepaData Service - Data Preprocessing (AI Service 1)
+  prepadata-service:
+    build:
+      context: ./AI-services
+      dockerfile: prepadata/Dockerfile
+    container_name: prepadata-service
+    ports:
+      - "8001:8001"
+    environment:
+      SERVICE_PORT: 8001
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+    depends_on:
+      eureka-server:
+        condition: service_started
+    networks:
+      - smart-academy-network
+    volumes:
+      - ai-data:/app/data
+      - ai-outputs:/app/outputs
+    restart: on-failure
+
+  # StudentProfiler Service - Student Clustering (AI Service 2)
+  studentprofiler-service:
+    build:
+      context: ./AI-services
+      dockerfile: profiler/Dockerfile
+    container_name: studentprofiler-service
+    ports:
+      - "8002:8002"
+    environment:
+      SERVICE_PORT: 8002
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+    depends_on:
+      eureka-server:
+        condition: service_started
+    networks:
+      - smart-academy-network
+    volumes:
+      - ai-data:/app/data
+      - ai-outputs:/app/outputs
+    restart: on-failure
+
+  # PathPredictor Service - Risk Prediction (AI Service 3)
+  pathpredictor-service:
+    build:
+      context: ./AI-services
+      dockerfile: predictor/Dockerfile
+    container_name: pathpredictor-service
+    ports:
+      - "8003:8003"
+    environment:
+      SERVICE_PORT: 8003
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+    depends_on:
+      eureka-server:
+        condition: service_started
+    networks:
+      - smart-academy-network
+    volumes:
+      - ai-data:/app/data
+      - ai-outputs:/app/outputs
+      - ai-models:/app/models
+    restart: on-failure
+
+  # RecoBuilder Service - Personalized Recommendations (AI Service 4)
+  recobuilder-service:
+    build:
+      context: ./AI-services
+      dockerfile: recobuilder/Dockerfile
+    container_name: recobuilder-service
+    ports:
+      - "8004:8004"
+    environment:
+      SERVICE_PORT: 8004
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    depends_on:
+      eureka-server:
+        condition: service_started
+    networks:
+      - smart-academy-network
+    volumes:
+      - ai-data:/app/data
+      - ai-outputs:/app/outputs
+      - ai-models:/app/models
+    restart: on-failure
+
 networks:
   smart-academy-network:
     driver: bridge
@@ -287,3 +374,6 @@ volumes:
   chatbot-temp:
   rabbitmq-data:
   rabbitmq-logs:
+  ai-data:
+  ai-outputs:
+  ai-models:
