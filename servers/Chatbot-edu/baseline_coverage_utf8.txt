@@ -1,0 +1,73 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.12.6, pytest-9.0.2, pluggy-1.6.0 -- C:\Python312\python.exe
+cachedir: .pytest_cache
+rootdir: D:\smart-academy-org\servers\Chatbot-edu
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.12.0, cov-7.0.0, env-1.2.0, mock-3.15.1
+collecting ... collected 22 items
+
+tests/test_routes/test_admin.py::test_ingest_documents_success PASSED    [  4%]
+tests/test_routes/test_admin.py::test_ingest_documents_error PASSED      [  9%]
+tests/test_routes/test_admin.py::test_health_check_success PASSED        [ 13%]
+tests/test_routes/test_admin.py::test_health_check_no_index PASSED       [ 18%]
+tests/test_routes/test_chat.py::test_ask_question_success PASSED         [ 22%]
+tests/test_routes/test_chat.py::test_ask_question_validation_error PASSED [ 27%]
+tests/test_routes/test_chat.py::test_ask_question_faiss_missing_error PASSED [ 31%]
+tests/test_services/test_minio_client.py::test_get_minio_client_success PASSED [ 36%]
+tests/test_services/test_minio_client.py::test_download_pdf_files_success PASSED [ 40%]
+tests/test_services/test_minio_client.py::test_download_pdf_files_bucket_not_found PASSED [ 45%]
+tests/test_services/test_minio_client.py::test_download_pdf_files_s3_error PASSED [ 50%]
+tests/test_services/test_minio_client.py::test_upload_pdf_to_minio_success PASSED [ 54%]
+tests/test_services/test_minio_client.py::test_upload_pdf_to_minio_failure PASSED [ 59%]
+tests/test_services/test_ollama_wrapper.py::test_ollama_init PASSED      [ 63%]
+tests/test_services/test_ollama_wrapper.py::test_invoke_string_input PASSED [ 68%]
+tests/test_services/test_ollama_wrapper.py::test_invoke_dict_input PASSED [ 72%]
+tests/test_services/test_ollama_wrapper.py::test_invoke_langchain_messages PASSED [ 77%]
+tests/test_services/test_ollama_wrapper.py::test_connection_error PASSED [ 81%]
+tests/test_services/test_ollama_wrapper.py::test_timeout_error PASSED    [ 86%]
+tests/test_services/test_ollama_wrapper.py::test_langchain_methods PASSED [ 90%]
+tests/test_services/test_rag.py::test_ask_question_logic PASSED          [ 95%]
+tests/test_services/test_rag.py::test_ask_question_no_docs_found PASSED  [100%]
+
+============================== warnings summary ===============================
+C:\Users\ROG\AppData\Roaming\Python\Python312\site-packages\starlette\formparsers.py:12
+  C:\Users\ROG\AppData\Roaming\Python\Python312\site-packages\starlette\formparsers.py:12: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.12.6-final-0 _______________
+
+Name                                         Stmts   Miss  Cover   Missing
+--------------------------------------------------------------------------
+app\__init__.py                                  0      0   100%
+app\models.py                                   35      0   100%
+auth\__init__.py                                 0      0   100%
+auth\eureka_reg.py                              14      9    36%   23-43
+auth\jwt_utils.py                               47     47     0%   5-113
+core\__init__.py                                 0      0   100%
+core\config.py                                  31      0   100%
+core\prompts.py                                  2      0   100%
+main.py                                         47     19    60%   38-64, 126, 172-173, 183-186
+routers\__init__.py                              0      0   100%
+routers\admin.py                                44     15    66%   84-85, 91-92, 103-104, 106-107, 126-133
+routers\chat.py                                 99     72    27%   59, 83-92, 125-191, 221-276
+run_ingestion.py                                36     36     0%   7-63
+services\__init__.py                             0      0   100%
+services\audio_transcription.py                 19     13    32%   26-50
+services\gemini_wrapper.py                      36     36     0%   6-84
+services\image_processing.py                    30     22    27%   25-103
+services\ingest.py                              90     73    19%   31-53, 66-78, 88-97, 111-119, 130-139, 158-227
+services\minio_client.py                        57      3    95%   31-33
+services\ollama_wrapper.py                      71      9    87%   55, 58, 64, 105-107, 124, 126, 151
+services\rag.py                                107     53    50%   35-66, 76-124, 136-163, 240-250, 253-262, 278, 296-298
+tests\conftest.py                               18      0   100%
+tests\test_routes\test_admin.py                 34      0   100%
+tests\test_routes\test_chat.py                  22      0   100%
+tests\test_services\test_minio_client.py        55      0   100%
+tests\test_services\test_ollama_wrapper.py      56      0   100%
+tests\test_services\test_rag.py                 50      0   100%
+--------------------------------------------------------------------------
+TOTAL                                         1000    407    59%
+======================== 22 passed, 1 warning in 0.38s ========================

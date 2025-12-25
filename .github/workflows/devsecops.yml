@@ -211,6 +211,17 @@ jobs:
         with:
           name: coverage-reports
       
+      - name: Prepare Chatbot-EDU coverage
+        run: |
+          mkdir -p servers/Chatbot-edu
+          if [ -f servers/Chatbot-edu/coverage.xml ]; then
+            echo "✅ Coverage file already in correct location"
+          else
+            echo "📋 Copying coverage file to correct location"
+            cp -v coverage.xml servers/Chatbot-edu/ || echo "⚠️ coverage.xml not found"
+          fi
+          ls -la servers/Chatbot-edu/
+
       - name: SonarCloud Scan - User Management
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
