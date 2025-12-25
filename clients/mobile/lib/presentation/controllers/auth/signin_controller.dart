@@ -50,9 +50,10 @@ class SignInController extends GetxController with GetSingleTickerProviderStateM
     tabController = TabController(vsync: this, length: authTabs.length);
     
     // Get repository from GetX dependency injection
+    // Get repository from GetX dependency injection
     _authRepository = Get.find<AuthRepository>();
-    _biometricService = BiometricService();
-    _secureStorageService = SecureStorageService();
+    _biometricService = Get.find<BiometricService>();
+    _secureStorageService = Get.find<SecureStorageService>();
     
     // Check biometric availability
     _checkBiometricAvailability();

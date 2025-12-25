@@ -26,6 +26,8 @@ import '../../domain/repositories/progress_repository.dart';
 import '../../domain/repositories/ai_chat_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../shared/services/token_storage_service.dart';
+import '../../shared/services/biometric_service.dart';
+import '../../shared/services/secure_storage_service.dart';
 
 /// Initialize all dependencies for the app
 class DependencyInjection {
@@ -43,6 +45,9 @@ class DependencyInjection {
       TokenStorageService(storage),
       permanent: true,
     );
+
+    Get.put<BiometricService>(BiometricService(), permanent: true);
+    Get.put<SecureStorageService>(SecureStorageService(), permanent: true);
 
     // Data Sources
     Get.put<AuthRemoteDataSource>(
