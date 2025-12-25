@@ -146,6 +146,18 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.11</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/dto/**</exclude>
+                        <exclude>**/entities/**</exclude>
+                        <exclude>**/config/**</exclude>
+                        <exclude>**/events/**</exclude>
+                        <exclude>**/exceptions/**</exclude>
+                        <exclude>**/messaging/**</exclude>
+                        <exclude>**/scheduler/**</exclude>
+                        <exclude>**/UserManagementApplication.java</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
@@ -166,12 +178,6 @@
                             <goal>check</goal>
                         </goals>
                         <configuration>
-                            <excludes>
-                                <exclude>**/dto/**</exclude>
-                                <exclude>**/events/**</exclude>
-                                <exclude>**/exceptions/**</exclude>
-                                <exclude>**/messaging/**</exclude>
-                            </excludes>
                             <rules>
                                 <rule>
                                     <element>BUNDLE</element>
@@ -179,7 +185,7 @@
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.20</minimum>
+                                            <minimum>0.60</minimum>
                                         </limit>
                                     </limits>
                                 </rule>

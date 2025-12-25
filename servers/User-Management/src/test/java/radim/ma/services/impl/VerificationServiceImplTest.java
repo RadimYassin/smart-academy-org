@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import radim.ma.entities.User;
 import radim.ma.repositories.UserRepository;
 import radim.ma.service.EmailService;
@@ -21,7 +20,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PasswordResetServiceImplTest {
+class VerificationServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
@@ -29,11 +28,9 @@ class PasswordResetServiceImplTest {
     private OTPService otpService;
     @Mock
     private EmailService emailService;
-    @Mock
-    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
-    private PasswordResetServiceImpl passwordResetService;
+    private VerificationServiceImpl verificationService;
 
     private User user;
 
@@ -42,51 +39,52 @@ class PasswordResetServiceImplTest {
         user = User.builder()
                 .email("test@example.com")
                 .firstName("John")
+                .lastName("Doe")
+                .isVerified(false)
                 .build();
     }
 
     @Test
-    void requestPasswordReset_ShouldSuccess() {
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
-        when(otpService.generateOTP()).thenReturn("123456");
-
-        passwordResetService.requestPasswordReset("test@example.com");
-
-        verify(userRepository).save(user);
-        verify(emailService).sendPasswordResetEmail(anyString(), anyString(), anyString());
-    }
-
-    @Test
-    void resetPassword_ShouldSuccess() {
-        user.setPasswordResetCode("123456");
-        user.setPasswordResetExpiry(LocalDateTime.now().plusMinutes(10));
+    void verifyEmail_ShouldSuccess() {
+        user.setVerificationCode("123456");
+        user.setVerificationCodeExpiry(LocalDateTime.now().plusMinutes(10));
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         when(otpService.isExpired(any())).thenReturn(false);
-        when(passwordEncoder.encode(anyString())).thenReturn("newEncodedPassword");
 
-        passwordResetService.resetPassword("test@example.com", "123456", "NewPassword123!");
+        verificationService.verifyEmail("test@example.com", "123456");
 
         verify(userRepository).save(user);
+        verify(emailService).sendWelcomeEmail(anyString(), anyString(), anyString());
     }
 
     @Test
-    void resetPassword_ShouldThrowException_WhenCodeInvalid() {
-        user.setPasswordResetCode("123456");
+    void verifyEmail_ShouldThrowException_WhenAlreadyVerified() {
+        user.setIsVerified(true);
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
 
-        assertThatThrownBy(() -> passwordResetService.resetPassword("test@example.com", "wrong", "pwd"))
+        assertThatThrownBy(() -> verificationService.verifyEmail("test@example.com", "123456"))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessage("Invalid reset code");
+                .hasMessage("Email already verified");
     }
 
     @Test
-    void resetPassword_ShouldThrowException_WhenCodeExpired() {
-        user.setPasswordResetCode("123456");
+    void verifyEmail_ShouldThrowException_WhenCodeInvalid() {
+        user.setVerificationCode("123456");
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
-        when(otpService.isExpired(any())).thenReturn(true);
 
-        assertThatThrownBy(() -> passwordResetService.resetPassword("test@example.com", "123456", "pwd"))
+        assertThatThrownBy(() -> verificationService.verifyEmail("test@example.com", "wrong"))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("expired");
+                .hasMessage("Invalid verification code");
+    }
+
+    @Test
+    void resendVerificationCode_ShouldSuccess() {
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
+        when(otpService.generateOTP()).thenReturn("654321");
+
+        verificationService.resendVerificationCode("test@example.com");
+
+        verify(userRepository).save(user);
+        verify(emailService).sendVerificationEmail(anyString(), anyString(), anyString());
     }
 }
