@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ProgressController.class)
-@ActiveProfiles(" test\)
+@ActiveProfiles("test")
 @ContextConfiguration(classes = { ProgressController.class, ProgressControllerTest.TestSecurityConfig.class })
 @DisplayName("ProgressController Web Layer Tests")
 class ProgressControllerTest {
@@ -123,4 +123,3 @@ class ProgressControllerTest {
         verify(progressService).getLessonProgress(lessonId, studentId);
     }
 }
-

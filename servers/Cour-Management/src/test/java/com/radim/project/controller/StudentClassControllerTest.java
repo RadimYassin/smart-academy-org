@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(StudentClassController.class)
-@ActiveProfiles(" test\)
+@ActiveProfiles("test")
 @ContextConfiguration(classes = { StudentClassController.class, StudentClassControllerTest.TestSecurityConfig.class })
 @DisplayName("StudentClassController Web Layer Tests")
 class StudentClassControllerTest {
@@ -172,4 +172,3 @@ class StudentClassControllerTest {
                 verify(studentClassService).deleteClass(classId, teacherId);
         }
 }
-

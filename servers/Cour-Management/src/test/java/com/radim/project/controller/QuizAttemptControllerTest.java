@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(QuizAttemptController.class)
-@ActiveProfiles(" test\)
+@ActiveProfiles("test")
 @ContextConfiguration(classes = { QuizAttemptController.class, QuizAttemptControllerTest.TestSecurityConfig.class })
 @DisplayName("QuizAttemptController Web Layer Tests")
 class QuizAttemptControllerTest {
@@ -148,4 +148,3 @@ class QuizAttemptControllerTest {
         verify(quizAttemptService).getQuizAttempts(quizId);
     }
 }
-
