@@ -54,6 +54,13 @@ jobs:
           cache: 'pip'
           cache-dependency-path: servers/Chatbot-edu/requirements*.txt
 
+      - name: Build & Test AI-Services-API
+        run: |
+          cd servers/AI-Services-API
+          pip install -r requirements.txt
+          pip install -r requirements-test.txt
+          python -m pytest --cov=app --cov=../../src --cov-report=xml:coverage.xml --junitxml=test-results.xml
+
       - name: Build & Test LMSConnector
         run: |
           cd servers/lmsconnector
@@ -117,7 +124,9 @@ jobs:
             servers/Cour-Management/target/surefire-reports/
             servers/Cour-Management/target/surefire-reports/
             servers/lmsconnector/test-results/
+            servers/lmsconnector/test-results/
             servers/Chatbot-edu/test-results.xml
+            servers/AI-Services-API/test-results.xml
           retention-days: 30
       
       - name: Upload coverage reports
@@ -129,7 +138,9 @@ jobs:
             servers/Cour-Management/target/site/jacoco/
             servers/Cour-Management/target/site/jacoco/
             servers/lmsconnector/coverage/
+            servers/lmsconnector/coverage/
             servers/Chatbot-edu/coverage.xml
+            servers/AI-Services-API/coverage.xml
           retention-days: 30
       
       - name: Display Test Summary
@@ -157,6 +168,10 @@ jobs:
             echo "✅ Tests executed" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### AI-Services-API" >> $GITHUB_STEP_SUMMARY
+          if [ -f servers/AI-Services-API/test-results.xml ]; then
+            echo "✅ Tests executed" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "📈 Coverage reports available in artifacts" >> $GITHUB_STEP_SUMMARY
 
@@ -265,6 +280,19 @@ jobs:
             -Dsonar.projectName="Chatbot-EDU"
             -Dsonar.python.coverage.reportPaths=coverage.xml
 
+      - name: SonarCloud Scan - AI-Services-API
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: servers/AI-Services-API
+          args: >
+            -Dsonar.organization=smart-academy-org
+            -Dsonar.projectKey=smart-academy-ai-services-api
+            -Dsonar.projectName="AI-Services-API"
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+
 
   # ==========================================
   # Stage 3: SCA -   OWASP Dependency Check
@@ -354,6 +382,9 @@ jobs:
           - name: chatbot-edu
             context: ./servers/Chatbot-edu
             image: smart-academy-chatbot-edu
+          - name: ai-services-api
+            context: ./servers/AI-Services-API
+            image: smart-academy-ai-services-api
     
     steps:
       - name: Checkout source code
