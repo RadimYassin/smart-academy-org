@@ -42,6 +42,10 @@ jobs:
         working-directory: clients/mobile
         run: flutter pub get
       
+      - name: Generate code
+        working-directory: clients/mobile
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+      
       - name: Verify Flutter installation
         run: flutter doctor -v
       
@@ -172,8 +176,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Web app built successfully and available in artifacts" >> $GITHUB_STEP_SUMMARY
           echo "Deploy to hosting service (Firebase, Netlify, Vercel, etc.)" >> $GITHUB_STEP_SUMMARY
-
-
 
   # ==========================================
   # Pipeline Summary
