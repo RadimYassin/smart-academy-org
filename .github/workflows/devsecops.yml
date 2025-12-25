@@ -289,6 +289,10 @@ jobs:
             -Dsonar.organization=smart-academy-org
             -Dsonar.projectKey=smart-academy-chatbot-edu
             -Dsonar.projectName="Chatbot-EDU"
+            -Dsonar.sources=app,services,routers,auth,core
+            -Dsonar.tests=tests
+            -Dsonar.test.inclusions=tests/**/*.py
+            -Dsonar.exclusions=**/__pycache__/**,**/*.pyc,venv/**,.venv/**
             -Dsonar.python.coverage.reportPaths=coverage.xml
 
       - name: SonarCloud Scan - AI-Services-API
