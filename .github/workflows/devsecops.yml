@@ -239,6 +239,19 @@ jobs:
             -Dsonar.exclusions=**/*.spec.ts,node_modules/**,dist/**
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
+      - name: Debug Chatbot-EDU Coverage
+        run: |
+          echo "🔍 Searching for coverage.xml..."
+          find . -name coverage.xml
+          echo "📂 Listing servers/Chatbot-edu:"
+          ls -la servers/Chatbot-edu/
+          if [ -f servers/Chatbot-edu/coverage.xml ]; then
+            echo "✅ coverage.xml found at expected location"
+            head -n 5 servers/Chatbot-edu/coverage.xml
+          else
+            echo "❌ coverage.xml MISSING from expected location"
+          fi
+
       - name: SonarCloud Scan - Chatbot-EDU
         uses: SonarSource/sonarcloud-github-action@master
         env:
