@@ -17,14 +17,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY app/ ./app/
 
-# Copy data and outputs directories (create if they don't exist)
+# Create data and outputs directories
 RUN mkdir -p /app/data/raw /app/data/processed /app/data/resources /app/outputs/models /app/outputs/figures
 
-# Copy src folder (AI service implementations)
-COPY ../src/ /app/src/
-
 # Expose port
-EXPOSE 8083
+EXPOSE 8000
 
-# Run the application
-CMD ["python", "-m", "app.main"]
+# Run the application with uvicorn
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
