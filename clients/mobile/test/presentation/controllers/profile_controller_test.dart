@@ -15,8 +15,8 @@ import 'package:mobile/data/models/user/user_dto.dart';
 import 'package:mobile/data/models/user/credit_balance.dart';
 import 'package:mobile/data/models/course/course.dart'; // For EnrollmentRepo if needed
 // EnrollmentRepository needs Enrollment model
-import 'package:mobile/data/models/enrollment/enrollment_dto.dart';
-import 'package:mobile/data/models/progress/course_progress.dart';
+import 'package:mobile/data/models/enrollment/enrollment.dart';
+import 'package:mobile/data/models/progress/progress.dart';
 
 import 'profile_controller_test.mocks.dart';
 
@@ -57,7 +57,9 @@ void main() {
       UserDto(id: 1, email: 'test@example.com', firstName: 'Test', lastName: 'User', role: 'STUDENT')
     );
     when(mockEnrollmentRepository.getMyCourses()).thenAnswer((_) async => []);
-    when(mockUserRepository.getCreditBalance()).thenAnswer((_) async => CreditBalance(balance: 100));
+    when(mockUserRepository.getCreditBalance()).thenAnswer((_) async => 
+      CreditBalance(userId: 1, balance: 100.0, lastUpdated: DateTime.now())
+    );
     when(mockBiometricService.isAvailable()).thenAnswer((_) async => false);
     when(mockSecureStorageService.isBiometricEnabled()).thenAnswer((_) async => false);
 

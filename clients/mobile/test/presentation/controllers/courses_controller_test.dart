@@ -9,7 +9,7 @@ import 'package:mobile/presentation/controllers/courses_controller.dart';
 import 'package:mobile/domain/repositories/course_repository.dart';
 import 'package:mobile/domain/repositories/auth_repository.dart';
 import 'package:mobile/data/models/course/course.dart';
-import 'package:mobile/data/models/course/create_course_request.dart';
+import 'package:mobile/data/models/course/course.dart';
 import 'package:mobile/core/constants/app_constants.dart';
 
 import 'courses_controller_test.mocks.dart';
@@ -87,6 +87,7 @@ void main() {
         description: 'Desc',
         category: 'Tech',
         level: 'BEGINNER',
+        thumbnailUrl: 'http://example.com/img.png',
         teacherId: 1,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now()
@@ -113,6 +114,7 @@ void main() {
         description: 'Desc',
         category: 'Tech',
         level: 'BEGINNER',
+        thumbnailUrl: 'http://example.com/img.png',
         teacherId: 1,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now()
@@ -140,9 +142,11 @@ void main() {
       // Setup
       final course1 = Course(
         id: '1', title: 'Flutter Basics', description: 'Intro', category: 'Mobile', level: 'BEGINNER', 
+        thumbnailUrl: 'http://example.com/img.png',
         teacherId: 1, createdAt: DateTime.now(), updatedAt: DateTime.now());
       final course2 = Course(
         id: '2', title: 'Advanced React', description: 'Deep dive', category: 'Web', level: 'ADVANCED', 
+        thumbnailUrl: 'http://example.com/img.png',
         teacherId: 1, createdAt: DateTime.now(), updatedAt: DateTime.now());
       
       when(mockCourseRepository.getAllCourses()).thenAnswer((_) async => [course1, course2]);

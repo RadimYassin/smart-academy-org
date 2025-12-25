@@ -83,7 +83,7 @@ void main() {
       controller.passwordController.text = 'password123';
       
       when(mockAuthRepository.login(any)).thenAnswer((_) async => 
-        AuthResponse(accessToken: 'token', refreshToken: 'refresh', email: 'test@example.com', id: '1', role: 'student', firstName: 'Test', lastName: 'User')
+        AuthResponse(accessToken: 'token', refreshToken: 'refresh', email: 'test@example.com', role: 'student', firstName: 'Test', lastName: 'User', isVerified: true)
       );
       when(mockSecureStorageService.isBiometricEnabled()).thenAnswer((_) async => false);
       when(mockBiometricService.isAvailable()).thenAnswer((_) async => false);
@@ -104,10 +104,10 @@ void main() {
         accessToken: 'token', 
         refreshToken: 'refresh', 
         email: 'test@example.com', 
-        id: '1', 
         role: 'student', 
         firstName: 'Test', 
-        lastName: 'User'
+        lastName: 'User',
+        isVerified: true
       );
 
       when(mockAuthRepository.login(any)).thenAnswer((_) async => mockResponse);
