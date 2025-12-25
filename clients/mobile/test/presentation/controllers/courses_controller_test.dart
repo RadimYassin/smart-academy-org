@@ -44,7 +44,8 @@ void main() {
   });
 
   group('CoursesController', () {
-    test('onInit loads courses for student', () async {
+    testWidgets('onInit loads courses for student', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
       // Setup handled in setUp() but we need to trigger onInit
       
       // Act
@@ -59,7 +60,8 @@ void main() {
       expect(controller.courses.isEmpty, true);
     });
 
-    test('loadCourses handles user with teacher role', () async {
+    testWidgets('loadCourses handles user with teacher role', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
       // Setup
       when(mockGetStorage.read('user_data')).thenReturn({'role': 'teacher', 'userId': 10});
       when(mockCourseRepository.getTeacherCourses(10)).thenAnswer((_) async => []);
@@ -72,7 +74,8 @@ void main() {
       verify(mockCourseRepository.getTeacherCourses(10));
     });
 
-    test('createCourse calls repository and refreshes list', () async {
+    testWidgets('createCourse calls repository and refreshes list', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
       // Setup
       // controller.onInit();
       controller.newCourse.value = CreateCourseRequest(
@@ -107,7 +110,8 @@ void main() {
       expect(controller.showCreateCourseModal.value, false);
     });
 
-    test('deleteCourse calls repository and removes from list', () async {
+    testWidgets('deleteCourse calls repository and removes from list', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
       // Setup
       final courseToDelete = Course(
         id: 'del-id',
@@ -138,7 +142,8 @@ void main() {
       expect(controller.showDeleteCourseModal.value, false);
     });
 
-    test('filtering functionality', () async {
+    testWidgets('filtering functionality', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
       // Setup
       final course1 = Course(
         id: '1', title: 'Flutter Basics', description: 'Intro', category: 'Mobile', level: 'BEGINNER', 

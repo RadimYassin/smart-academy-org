@@ -40,7 +40,8 @@ void main() {
   });
 
   group('SignInController', () {
-    test('initial state is correct', () {
+    testWidgets('initial state is correct', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
       expect(controller.emailController.text, isEmpty);
       expect(controller.passwordController.text, isEmpty);
       expect(controller.isLoading.value, false);
@@ -48,7 +49,8 @@ void main() {
       expect(controller.isPasswordHidden.value, true);
     });
 
-    test('togglePasswordVisibility toggles state', () {
+    testWidgets('togglePasswordVisibility toggles state', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
       expect(controller.isPasswordHidden.value, true);
       controller.togglePasswordVisibility();
       expect(controller.isPasswordHidden.value, false);
@@ -56,29 +58,36 @@ void main() {
       expect(controller.isPasswordHidden.value, true);
     });
 
-    test('validateEmail returns error for empty email', () {
+    testWidgets('validateEmail returns error for empty email', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
       expect(controller.validateEmail(''), 'Email is required');
       expect(controller.validateEmail(null), 'Email is required');
     });
 
-    test('validateEmail returns error for invalid email', () {
+    testWidgets('validateEmail returns error for invalid email', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
       expect(controller.validateEmail('invalid-email'), 'Please enter a valid email');
     });
 
-    test('validateEmail returns null for valid email', () {
+    testWidgets('validateEmail returns null for valid email', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
       expect(controller.validateEmail('test@example.com'), null);
     });
 
-    test('validatePassword returns error for short password', () {
+    testWidgets('validatePassword returns error for short password', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
       expect(controller.validatePassword('12345'), 'Password must be at least 6 characters');
     });
 
-    test('validatePassword returns null for valid password', () {
+    testWidgets('validatePassword returns null for valid password', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
       expect(controller.validatePassword('123456'), null);
     });
     
     // --- Login Tests ---
-    test('signIn triggers loading state', () async {
+    testWidgets('signIn triggers loading state', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
+      
       // Setup
       controller.emailController.text = 'test@example.com';
       controller.passwordController.text = 'password123';
@@ -96,7 +105,9 @@ void main() {
       expect(controller.isLoading.value, false);
     });
 
-    test('signIn success calls repository', () async {
+    testWidgets('signIn success calls repository', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
+      
       // Setup
       controller.emailController.text = 'test@example.com';
       controller.passwordController.text = 'password123';
@@ -123,7 +134,9 @@ void main() {
       expect(controller.errorMessage.value, isEmpty);
     });
 
-    test('signIn failure sets error message', () async {
+    testWidgets('signIn failure sets error message', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
+
       // Setup
       controller.emailController.text = 'test@example.com';
       controller.passwordController.text = 'password123';

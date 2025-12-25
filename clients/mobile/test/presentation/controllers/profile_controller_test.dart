@@ -72,7 +72,8 @@ void main() {
   });
 
   group('ProfileController', () {
-    test('onInit loads all data', () async {
+    testWidgets('onInit loads all data', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
       // Act (onInit called by constructor if put in Get, but here manual call needed or use Get.put)
       // controller = Get.put(ProfileController()); // This triggers onInit
       await Future.delayed(Duration.zero);
@@ -83,7 +84,8 @@ void main() {
       verify(mockUserRepository.getCreditBalance());
     });
 
-    test('updateProfile calls repository and updates user', () async {
+    testWidgets('updateProfile calls repository and updates user', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
       // Setup
       // controller.onInit();
       final updatedUser = UserDto(id: 1, email: 'test@example.com', firstName: 'New', lastName: 'Name', role: 'STUDENT');
@@ -97,7 +99,8 @@ void main() {
       expect(controller.user.value?.firstName, 'New');
     });
 
-    test('logout performs cleanup and navigation', () async {
+    testWidgets('logout performs cleanup and navigation', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp());
       // controller.onInit();
       when(mockAuthRepository.logout()).thenAnswer((_) async => {});
       
