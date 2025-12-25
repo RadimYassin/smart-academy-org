@@ -133,6 +133,26 @@ class AuthRepositoryImpl implements AuthRepository {
     return await _tokenStorage.getRefreshToken();
   }
 
+  @override
+  Future<void> forgotPassword(String email) async {
+    try {
+      await _remoteDataSource.forgotPassword(email);
+    } catch (e) {
+      Logger.logError('Repository forgot password error', error: e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> resetPassword(String email, String code, String newPassword) async {
+    try {
+      await _remoteDataSource.resetPassword(email, code, newPassword);
+    } catch (e) {
+      Logger.logError('Repository reset password error', error: e);
+      rethrow;
+    }
+  }
+
   /// Private helper to save auth data
   Future<void> _saveAuthData(AuthResponse response) async {
     try {

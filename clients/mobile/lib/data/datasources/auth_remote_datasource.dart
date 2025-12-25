@@ -172,5 +172,63 @@ class AuthRemoteDataSource {
       }
     }
   }
+
+  /// Request password reset code
+  Future<void> forgotPassword(String email) async {
+    try {
+      Logger.logInfo('Requesting password reset for: $email');
+      
+      final response = await _apiClient.post(
+        '${AppConstants.userServicePath}/api/v1/auth/forgot-password',
+        data: {'email': email},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to request password reset');
+      }
+      
+      Logger.logInfo('Password reset code sent successfully');
+    } on DioException catch (e) {
+      Logger.logError('Forgot password error', error: e);
+      
+      if (e.response != null) {
+        final message = e.response!.data?['message'] ?? 'Failed to request password reset';
+        throw Exception(message);
+      } else {
+        throw Exception('Network error. Please check your connection.');
+      }
+    }
+  }
+
+  /// Reset password with OTP code
+  Future<void> resetPassword(String email, String code, String newPassword) async {
+    try {
+      Logger.logInfo('Resetting password for: $email');
+      
+      final response = await _apiClient.post(
+        '${AppConstants.userServicePath}/api/v1/auth/reset-password',
+        data: {
+          'email': email,
+          'code': code,
+          'newPassword': newPassword,
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to reset password');
+      }
+      
+      Logger.logInfo('Password reset successfully');
+    } on DioException catch (e) {
+      Logger.logError('Reset password error', error: e);
+      
+      if (e.response != null) {
+        final message = e.response!.data?['message'] ?? 'Failed to reset password';
+        throw Exception(message);
+      } else {
+        throw Exception('Network error. Please check your connection.');
+      }
+    }
+  }
 }
 
