@@ -10,7 +10,8 @@ def test_generate_recommendations_endpoint(client, mock_auth):
     with patch('app.routers.recommender.RecoBuilder') as mock_rb_cls, \
          patch('pandas.read_csv') as mock_read_csv, \
          patch('os.path.exists', return_value=True), \
-         patch('os.makedirs'):
+         patch('os.makedirs'), \
+         patch('app.config.settings.OPENAI_API_KEY', new="sk-test"):
          
         # Mock student profiles dataframe
         mock_read_csv.return_value = pd.DataFrame({'ID': [1]})
