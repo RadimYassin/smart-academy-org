@@ -62,8 +62,8 @@ class ProfileController extends GetxController with GetSingleTickerProviderState
     _enrollmentRepository = Get.find<EnrollmentRepository>();
     _progressRepository = Get.find<ProgressRepository>();
     _authRepository = Get.find<AuthRepository>();
-    _biometricService = BiometricService();
-    _secureStorageService = SecureStorageService();
+    _biometricService = Get.find<BiometricService>();
+    _secureStorageService = Get.find<SecureStorageService>();
     
     loadUserProfile();
     loadUserStats();
