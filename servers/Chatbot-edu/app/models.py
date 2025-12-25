@@ -18,12 +18,13 @@ class QuestionRequest(BaseModel):
         examples=["Qu'est-ce qu'une classe en Python ?"]
     )
     
-    class Config:
-        json_schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "question": "Comment fonctionne l'héritage en Java ?"
             }
         }
+    }
 
 
 class SourceDocument(BaseModel):
@@ -35,8 +36,8 @@ class SourceDocument(BaseModel):
     page: Any = Field(..., description="Numéro de page")
     source_file: str = Field(..., description="Nom du fichier source")
     
-    class Config:
-        json_schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "content": "En Python, une classe est définie avec le mot-clé 'class'...",
                 "metadata": {"page": 45, "source_file": "Python-1.pdf"},
@@ -44,6 +45,7 @@ class SourceDocument(BaseModel):
                 "source_file": "Python-1.pdf"
             }
         }
+    }
 
 
 class AnswerResponse(BaseModel):
@@ -58,8 +60,8 @@ class AnswerResponse(BaseModel):
     model_used: str = Field(..., description="Modèle LLM utilisé")
     num_sources: int = Field(..., description="Nombre de sources consultées")
     
-    class Config:
-        json_schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "answer": "Excellente question sur les classes en Python ! ...",
                 "sources": [
@@ -74,6 +76,7 @@ class AnswerResponse(BaseModel):
                 "num_sources": 3
             }
         }
+    }
 
 
 class IngestRequest(BaseModel):
@@ -89,13 +92,14 @@ class IngestRequest(BaseModel):
         description="Chemin personnalisé vers le dossier de PDFs locaux"
     )
     
-    class Config:
-        json_schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "use_local_pdfs": True,
                 "local_pdf_dir": "./Cours"
             }
         }
+    }
 
 
 class IngestResponse(BaseModel):
@@ -109,8 +113,8 @@ class IngestResponse(BaseModel):
     message: str = Field(..., description="Message descriptif")
     index_path: str = Field(default="", description="Chemin de l'index FAISS")
     
-    class Config:
-        json_schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "status": "success",
                 "files_processed": 45,
@@ -120,6 +124,7 @@ class IngestResponse(BaseModel):
                 "index_path": "./faiss_index"
             }
         }
+    }
 
 
 class HealthResponse(BaseModel):
@@ -131,8 +136,8 @@ class HealthResponse(BaseModel):
     llm_provider: str = Field(..., description="Provider LLM configuré")
     model: str = Field(..., description="Modèle utilisé")
     
-    class Config:
-        json_schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "status": "healthy",
                 "faiss_index_exists": True,
@@ -140,3 +145,4 @@ class HealthResponse(BaseModel):
                 "model": "gpt-4o-mini"
             }
         }
+    }
