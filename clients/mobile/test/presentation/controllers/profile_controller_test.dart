@@ -64,6 +64,7 @@ void main() {
     when(mockSecureStorageService.isBiometricEnabled()).thenAnswer((_) async => false);
 
     controller = ProfileController();
+    controller.onInit();
   });
 
   tearDown(() {
@@ -74,7 +75,6 @@ void main() {
     test('onInit loads all data', () async {
       // Act (onInit called by constructor if put in Get, but here manual call needed or use Get.put)
       // controller = Get.put(ProfileController()); // This triggers onInit
-      controller.onInit();
       await Future.delayed(Duration.zero);
 
       // Assert
@@ -85,7 +85,7 @@ void main() {
 
     test('updateProfile calls repository and updates user', () async {
       // Setup
-      controller.onInit();
+      // controller.onInit();
       final updatedUser = UserDto(id: 1, email: 'test@example.com', firstName: 'New', lastName: 'Name', role: 'STUDENT');
       when(mockUserRepository.updateUser(any, any)).thenAnswer((_) async => updatedUser);
 
@@ -98,7 +98,7 @@ void main() {
     });
 
     test('logout performs cleanup and navigation', () async {
-      controller.onInit();
+      // controller.onInit();
       when(mockAuthRepository.logout()).thenAnswer((_) async => {});
       
       // Need to mock dialog response for confirmation

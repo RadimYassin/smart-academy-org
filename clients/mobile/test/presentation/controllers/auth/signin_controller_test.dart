@@ -32,6 +32,7 @@ void main() {
     Get.put<SecureStorageService>(mockSecureStorageService);
 
     controller = SignInController();
+    controller.onInit();
   });
 
   tearDown(() {

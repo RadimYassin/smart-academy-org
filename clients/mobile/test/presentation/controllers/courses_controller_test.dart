@@ -36,6 +36,7 @@ void main() {
     when(mockCourseRepository.getAllCourses()).thenAnswer((_) async => []);
 
     controller = CoursesController();
+    controller.onInit();
   });
 
   tearDown(() {
@@ -47,7 +48,7 @@ void main() {
       // Setup handled in setUp() but we need to trigger onInit
       
       // Act
-      controller.onInit();
+      // controller.onInit(); // Called in setUp
       
       // Wait for async operations
       await Future.delayed(Duration.zero);
@@ -73,7 +74,7 @@ void main() {
 
     test('createCourse calls repository and refreshes list', () async {
       // Setup
-      controller.onInit();
+      // controller.onInit();
       controller.newCourse.value = CreateCourseRequest(
         title: 'New Course',
         description: 'Desc',
@@ -121,8 +122,7 @@ void main() {
       );
       
       // Initial state with one course
-      when(mockCourseRepository.getAllCourses()).thenAnswer((_) async => [courseToDelete]);
-      controller.onInit();
+      // controller.onInit();
       await controller.loadCourses();
       expect(controller.courses.length, 1);
 
@@ -150,8 +150,7 @@ void main() {
         teacherId: 1, createdAt: DateTime.now(), updatedAt: DateTime.now());
       
       when(mockCourseRepository.getAllCourses()).thenAnswer((_) async => [course1, course2]);
-      
-      controller.onInit();
+      // controller.onInit();
       await controller.loadCourses();
 
       // Test Search
