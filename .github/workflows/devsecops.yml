@@ -306,6 +306,10 @@ jobs:
             -Dsonar.organization=smart-academy-org
             -Dsonar.projectKey=smart-academy-ai-services-api
             -Dsonar.projectName="AI-Services-API"
+            -Dsonar.sources=app
+            -Dsonar.tests=tests
+            -Dsonar.test.inclusions=tests/**/*.py
+            -Dsonar.exclusions=**/__pycache__/**,**/*.pyc,venv/**,.venv/**
             -Dsonar.python.coverage.reportPaths=coverage.xml
 
 
