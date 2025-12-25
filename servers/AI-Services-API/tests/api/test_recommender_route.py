@@ -59,3 +59,39 @@ def test_recommend_at_risk_endpoint(client, mock_auth):
             data = response.json()
             assert data["at_risk_count"] == 1
             assert data["recommendations"][0]["student_id"] == 1
+
+def test_get_recommender_status(client):
+    """
+    Test GET /api/recommender/status
+    """
+    response = client.get("/api/recommender/status")
+    assert response.status_code == 200
+    assert response.json()["status"] == "UP"
+    assert "OpenAI GPT-4" in response.json()["technologies"]
+
+def test_recommend_at_risk_fallback(client, mock_auth):
+    """
+    Test fallback to rule-based recommendations when OpenAI key is missing
+    """
+    mock_model = MagicMock()
+    mock_model.predict.return_value = [1]
+    mock_model.predict_proba.return_value = [[0.1, 0.9]]
+    
+    with patch('httpx.AsyncClient.get') as mock_get, \
+         patch('builtins.open', mock_open(read_data=b"data")), \
+         patch('pickle.load', return_value=mock_model), \
+         patch('app.config.settings.OPENAI_API_KEY', new=""):
+         
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = [{'studentId': 1, 'subject': 'X', 'practical': 0, 'theoretical': 0, 'total': 0}]
+        mock_get.return_value = mock_resp
+        
+        response = client.post("/api/recommender/recommend-at-risk-from-lms")
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["recommendations"]) > 0
+        # ai_generated key might be missing in fallback according to code analysis
+
+

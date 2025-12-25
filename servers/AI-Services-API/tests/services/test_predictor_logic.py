@@ -49,7 +49,7 @@ class TestPathPredictorLogic:
         predictor.prepare_features()
         
         # Mocking the internal model
-        with patch('xgboost.XGBClassifier') as mock_xgb:
+        with patch('pipeline.xgb.XGBClassifier') as mock_xgb:
             mock_instance = mock_xgb.return_value
             mock_instance.fit.return_value = None
             

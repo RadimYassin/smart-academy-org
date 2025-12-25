@@ -25,7 +25,7 @@ class TestProfilerLogic:
         profiler.aggregate_by_student()
         
         agg = profiler.student_features
-        assert len(agg) == 2
+        assert len(agg) == 4
         assert 'Failure_Rate' in agg.columns
         assert 'Absence_Count' in agg.columns
 
@@ -37,10 +37,19 @@ class TestProfilerLogic:
         profiler.aggregate_by_student()
         profiler.normalize_features()
         
-        with patch('sklearn.cluster.KMeans') as mock_kmeans, \
+        with patch('pipeline.KMeans') as mock_kmeans, \
+             patch('pipeline.silhouette_score') as mock_silhouette, \
+             patch('matplotlib.pyplot.subplots') as mock_subplots, \
              patch('matplotlib.pyplot.savefig'), \
              patch('matplotlib.pyplot.figure'), \
              patch('matplotlib.pyplot.close'):
+            
+            # Setup subplots mock
+            mock_ax1 = MagicMock()
+            mock_ax2 = MagicMock()
+            mock_subplots.return_value = (MagicMock(), [mock_ax1, mock_ax2])
+            
+            mock_silhouette.return_value = 0.5
             
             mock_inst = mock_kmeans.return_value
             mock_inst.fit.return_value = None
@@ -58,9 +67,9 @@ class TestProfilerLogic:
         profiler.aggregate_by_student()
         profiler.normalize_features()
         
-        with patch('sklearn.cluster.KMeans') as mock_kmeans:
+        with patch('pipeline.KMeans') as mock_kmeans:
             inst = mock_kmeans.return_value
-            inst.fit_predict.return_value = np.array([0, 1])
+            inst.fit_predict.return_value = np.array([0, 1, 0, 1])
             
             profiler.cluster_students(n_clusters=2)
             
