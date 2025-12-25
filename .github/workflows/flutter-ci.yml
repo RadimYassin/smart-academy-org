@@ -76,6 +76,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✅ Analysis completed" >> $GITHUB_STEP_SUMMARY
           echo "✅ Tests executed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ SonarCloud scan completed" >> $GITHUB_STEP_SUMMARY
           echo "📈 Coverage report available in artifacts" >> $GITHUB_STEP_SUMMARY
 
   # ==========================================
