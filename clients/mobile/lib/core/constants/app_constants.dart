@@ -1,7 +1,7 @@
 class AppConstants {
   // API Configuration - Smart Academy Backend
   // Change this IP address to match your backend server
-  static const String baseUrl = 'http://192.168.100.97:8888'; // API Gateway URL
+  static const String baseUrl = 'http://localhost:8888'; // API Gateway URL
   static const String userServicePath = '/user-management-service';
   static const String courseServicePath = '/course-service';
   static const String lmsConnectorPath = '/lmsconnector';

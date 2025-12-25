@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../controllers/profile_controller.dart';
+import '../../routes/app_routes.dart';
 
 class ProfileScreen extends GetView<ProfileController> {
   const ProfileScreen({super.key});
@@ -626,6 +627,14 @@ class ProfileScreen extends GetView<ProfileController> {
           children: [
             _buildSettingsTile(context, theme, isDarkMode, AppStrings.personalDetails, Icons.person_outline, () {}),
             _buildSettingsTile(context, theme, isDarkMode, AppStrings.preferenceVideo, Icons.video_settings_outlined, () {}),
+            _buildSettingsTile(
+              context,
+              theme,
+              isDarkMode,
+              'Course Recommendations',
+              Icons.recommend_outlined,
+              () => Get.toNamed(AppRoutes.recommendations),
+            ),
             _buildSettingsTile(context, theme, isDarkMode, AppStrings.yourDownload, Icons.download_outlined, () {}),
             Obx(() {
               return SwitchListTile(
