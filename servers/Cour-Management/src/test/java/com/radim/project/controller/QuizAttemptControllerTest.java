@@ -18,6 +18,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -33,6 +34,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(QuizAttemptController.class)
+@ActiveProfiles(" test\)
 @ContextConfiguration(classes = { QuizAttemptController.class, QuizAttemptControllerTest.TestSecurityConfig.class })
 @DisplayName("QuizAttemptController Web Layer Tests")
 class QuizAttemptControllerTest {
@@ -146,3 +148,4 @@ class QuizAttemptControllerTest {
         verify(quizAttemptService).getQuizAttempts(quizId);
     }
 }
+

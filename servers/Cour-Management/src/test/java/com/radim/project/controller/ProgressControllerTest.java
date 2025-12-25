@@ -17,6 +17,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ProgressController.class)
+@ActiveProfiles(" test\)
 @ContextConfiguration(classes = { ProgressController.class, ProgressControllerTest.TestSecurityConfig.class })
 @DisplayName("ProgressController Web Layer Tests")
 class ProgressControllerTest {
@@ -121,3 +123,4 @@ class ProgressControllerTest {
         verify(progressService).getLessonProgress(lessonId, studentId);
     }
 }
+

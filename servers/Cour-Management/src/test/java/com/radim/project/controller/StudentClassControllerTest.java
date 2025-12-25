@@ -18,6 +18,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -33,6 +34,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(StudentClassController.class)
+@ActiveProfiles(" test\)
 @ContextConfiguration(classes = { StudentClassController.class, StudentClassControllerTest.TestSecurityConfig.class })
 @DisplayName("StudentClassController Web Layer Tests")
 class StudentClassControllerTest {
@@ -170,3 +172,4 @@ class StudentClassControllerTest {
                 verify(studentClassService).deleteClass(classId, teacherId);
         }
 }
+
