@@ -22,5 +22,20 @@ const customRender = (
     options?: Omit<RenderOptions, 'wrapper'>,
 ) => render(ui, { wrapper: AllTheProviders, ...options });
 
+// Re-export everything
 export * from '@testing-library/react';
 export { customRender as render };
+
+// Helper to create mock user
+export const createMockUser = (overrides = {}) => ({
+    id: 1,
+    email: 'test@example.com',
+    firstName: 'Test',
+    lastName: 'User',
+    role: 'TEACHER',
+    ...overrides,
+});
+
+// Helper to wait for async updates
+export const waitForLoadingToFinish = () =>
+    new Promise(resolve => setTimeout(resolve, 0));

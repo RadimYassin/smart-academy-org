@@ -91,9 +91,9 @@ jobs:
         with:
           projectBaseDir: ${{ matrix.service.path }}
           args: >
-            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
-            -Dsonar.projectKey=smart-academy-${{ matrix.service.name }}
-            -Dsonar.projectName=Smart Academy - ${{ matrix.service.name }}
+            -Dsonar.organization=smart-academy-org
+            -Dsonar.projectKey=smart-academy-Web
+            -Dsonar.projectName="Smart Academy - Web"
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.sources=src
             -Dsonar.tests=src

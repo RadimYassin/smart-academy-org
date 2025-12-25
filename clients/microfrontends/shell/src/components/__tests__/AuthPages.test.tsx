@@ -1,44 +1,203 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '../../test/utils';
-import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '../test/utils';
 import AuthPages from '../AuthPages';
+import { authApi } from '../../api';
 
-describe('AuthPages', () => {
-    const mockOnAuth = () => { };
+// Mock the auth API
+vi.mock('../../api', () => ({
+    authApi: {
+        login: vi.fn(),
+        register: vi.fn(),
+    },
+    handleApiError: vi.fn((err) => err.message || 'An error occurred'),
+}));
 
-    it('should render login form by default', () => {
-        render(<AuthPages onAuth={mockOnAuth} />);
+describe('AuthPages Component', () => {
+    const mockOnAuth = vi.fn();
 
-        // Check for login form inputs using placeholders
-        const emailInput = screen.getByPlaceholderText(/you@example.com/i);
-        const passwordInput = screen.getByPlaceholderText(/••••/);
-
-        expect(emailInput).toBeInTheDocument();
-        expect(passwordInput).toBeInTheDocument();
-        expect(screen.getByText(/email address/i)).toBeInTheDocument();
+    beforeEach(() => {
+        vi.clearAllMocks();
     });
 
-    it('should switch to register form when Register tab is clicked', async () => {
-        const user = userEvent.setup();
-        render(<AuthPages onAuth={mockOnAuth} />);
+    describe('Login Form', () => {
+        it('renders login form by default', () => {
+            render(<AuthPages onAuth={mockOnAuth} />);
 
-        // Get all buttons and find the one with exact text "Register"
-        const registerTab = screen.getAllByRole('button').find(btn => btn.textContent?.trim() === 'Register');
+            expect(screen.getByText('Smart Academy')).toBeInTheDocument();
+            expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
+            expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+        });
 
-        if (registerTab) {
-            await user.click(registerTab);
+        it('handles successful login', async () => {
+            const mockResponse = {
+                access_token: 'test-token',
+                refresh_token: 'test-refresh',
+                token_type: 'Bearer',
+            };
 
-            // Check for register form fields that don't exist in login form
-            expect(screen.getByPlaceholderText(/john/i)).toBeInTheDocument(); // First name
-            expect(screen.getByPlaceholderText(/doe/i)).toBeInTheDocument(); // Last name
-            expect(screen.getByText(/first name/i)).toBeInTheDocument(); // Label text
-        }
+            vi.mocked(authApi.login).mockResolvedValueOnce(mockResponse);
+
+            render(<AuthPages onAuth={mockOnAuth} />);
+
+            const emailInput = screen.getByLabelText(/email address/i);
+            const passwordInput = screen.getByLabelText(/^password$/i);
+            const loginButton = screen.getByRole('button', { name: /login/i });
+
+            fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+            fireEvent.change(passwordInput, { target: { value: 'password123' } });
+            fireEvent.click(loginButton);
+
+            await waitFor(() => {
+                expect(authApi.login).toHaveBeenCalledWith({
+                    email: 'test@example.com',
+                    password: 'password123',
+                });
+                expect(mockOnAuth).toHaveBeenCalledWith('test@example.com', 'password123');
+            });
+
+            expect(screen.getByText(/login successful/i)).toBeInTheDocument();
+        });
+
+        it('displays error on failed login', async () => {
+            vi.mocked(authApi.login).mockRejectedValueOnce(new Error('Invalid credentials'));
+
+            render(<AuthPages onAuth={mockOnAuth} />);
+
+            const emailInput = screen.getByLabelText(/email address/i);
+            const passwordInput = screen.getByLabelText(/^password$/i);
+            const loginButton = screen.getByRole('button', { name: /login/i });
+
+            fireEvent.change(emailInput, { target: { value: 'wrong@example.com' } });
+            fireEvent.change(passwordInput, { target: { value: 'wrongpass' } });
+            fireEvent.click(loginButton);
+
+            await waitFor(() => {
+                expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
+            });
+        });
+
+        it('toggles password visibility', () => {
+            render(<AuthPages onAuth={mockOnAuth} />);
+
+            const passwordInput = screen.getByLabelText(/^password$/i) as HTMLInputElement;
+            const toggleButton = screen.getAllByRole('button')[2]; // Eye icon button
+
+            expect(passwordInput.type).toBe('password');
+
+            fireEvent.click(toggleButton);
+            expect(passwordInput.type).toBe('text');
+
+            fireEvent.click(toggleButton);
+            expect(passwordInput.type).toBe('password');
+        });
     });
 
-    it('should display Smart Academy branding', () => {
-        render(<AuthPages onAuth={mockOnAuth} />);
+    describe('Registration Form', () => {
+        beforeEach(() => {
+            render(<AuthPages onAuth={mockOnAuth} />);
+            const registerTab = screen.getByRole('button', { name: /register/i });
+            fireEvent.click(registerTab);
+        });
 
-        expect(screen.getByText('Smart Academy')).toBeInTheDocument();
-        expect(screen.getByText('Your Learning Journey Starts Here')).toBeInTheDocument();
+        it('switches to registration form', () => {
+            expect(screen.getByLabelText(/first name/i)).toBeInTheDocument();
+            expect(screen.getByLabelText(/last name/i)).toBeInTheDocument();
+            expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
+            expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
+            expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
+        });
+
+        it('validates password match', async () => {
+            const firstNameInput = screen.getByLabelText(/first name/i);
+            const lastNameInput = screen.getByLabelText(/last name/i);
+            const emailInput = screen.getByLabelText(/email address/i);
+            const passwordInput = screen.getByLabelText(/^password$/i);
+            const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
+            const submitButton = screen.getByRole('button', { name: /create account/i });
+
+            fireEvent.change(firstNameInput, { target: { value: 'John' } });
+            fireEvent.change(lastNameInput, { target: { value: 'Doe' } });
+            fireEvent.change(emailInput, { target: { value: 'john@example.com' } });
+            fireEvent.change(passwordInput, { target: { value: 'password123' } });
+            fireEvent.change(confirmPasswordInput, { target: { value: 'different' } });
+            fireEvent.click(submitButton);
+
+            await waitFor(() => {
+                expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
+            });
+        });
+
+        it('validates password length', async () => {
+            const passwordInput = screen.getByLabelText(/^password$/i);
+            const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
+            const submitButton = screen.getByRole('button', { name: /create account/i });
+
+            fireEvent.change(passwordInput, { target: { value: 'short' } });
+            fireEvent.change(confirmPasswordInput, { target: { value: 'short' } });
+            fireEvent.click(submitButton);
+
+            await waitFor(() => {
+                expect(screen.getByText(/at least 8 characters/i)).toBeInTheDocument();
+            });
+        });
+
+        it('handles successful registration', async () => {
+            const mockResponse = {
+                access_token: 'test-token',
+                refresh_token: 'test-refresh',
+                token_type: 'Bearer',
+            };
+
+            vi.mocked(authApi.register).mockResolvedValueOnce(mockResponse);
+
+            const firstNameInput = screen.getByLabelText(/first name/i);
+            const lastNameInput = screen.getByLabelText(/last name/i);
+            const emailInput = screen.getByLabelText(/email address/i);
+            const passwordInput = screen.getByLabelText(/^password$/i);
+            const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
+            const submitButton = screen.getByRole('button', { name: /create account/i });
+
+            fireEvent.change(firstNameInput, { target: { value: 'John' } });
+            fireEvent.change(lastNameInput, { target: { value: 'Doe' } });
+            fireEvent.change(emailInput, { target: { value: 'john@example.com' } });
+            fireEvent.change(passwordInput, { target: { value: 'password123' } });
+            fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } });
+            fireEvent.click(submitButton);
+
+            await waitFor(() => {
+                expect(authApi.register).toHaveBeenCalledWith({
+                    firstName: 'John',
+                    lastName: 'Doe',
+                    email: 'john@example.com',
+                    password: 'password123',
+                    role: 'TEACHER',
+                });
+                expect(screen.getByText(/registration successful/i)).toBeInTheDocument();
+            });
+        });
+    });
+
+    describe('Tab Switching', () => {
+        it('clears errors when switching tabs', async () => {
+            vi.mocked(authApi.login).mockRejectedValueOnce(new Error('Login error'));
+
+            render(<AuthPages onAuth={mockOnAuth} />);
+
+            // Trigger login error
+            const loginButton = screen.getByRole('button', { name: /login/i });
+            fireEvent.click(loginButton);
+
+            await waitFor(() => {
+                expect(screen.getByText(/login error/i)).toBeInTheDocument();
+            });
+
+            // Switch to register tab
+            const registerTab = screen.getByRole('button', { name: /register/i });
+            fireEvent.click(registerTab);
+
+            // Error should be cleared
+            expect(screen.queryByText(/login error/i)).not.toBeInTheDocument();
+        });
     });
 });
