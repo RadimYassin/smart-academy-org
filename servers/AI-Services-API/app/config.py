@@ -21,11 +21,11 @@ class Settings:
     # Gateway Configuration
     GATEWAY_URL: str = os.getenv("GATEWAY_URL", "http://localhost:8888")
     
-    # Database Configuration
-    DATABASE_URL: str = os.getenv(
-        "DATABASE_URL",
-        "postgresql://edupath_user:edupath_password@localhost:5432/edupath_db"
-    )
+    # # Database Configuration
+    # DATABASE_URL: str = os.getenv(
+    #     "DATABASE_URL",
+    #     "postgresql://edupath_user:edupath_password@localhost:5432/edupath_db"
+    # )
     
     # OpenAI Configuration
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
