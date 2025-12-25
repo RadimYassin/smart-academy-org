@@ -26,7 +26,7 @@ class AIHealthResponse {
   }
 }
 
-class AI InfoResponse {
+class AIInfoResponse {
   final String app;
   final String version;
   final String description;

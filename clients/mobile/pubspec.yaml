@@ -63,6 +63,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  mockito: ^5.4.4
   flutter_lints: ^5.0.0
   
   # Code Generation
