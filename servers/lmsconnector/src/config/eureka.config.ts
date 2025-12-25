@@ -16,8 +16,8 @@ export default registerAs('eureka', () => ({
 
     // This application's registration info
     instance: {
-        app: process.env.APP_NAME || 'lmsconnector',
-        instanceId: `${process.env.APP_NAME || 'lmsconnector'}:${process.env.PORT || 3000}`,
+        app: process.env.APP_NAME || 'LMS-CONNECTOR',
+        instanceId: `${process.env.APP_NAME || 'LMS-CONNECTOR'}:${process.env.PORT || 3000}`,
         hostName: process.env.HOSTNAME || 'localhost',
         ipAddr: process.env.IP_ADDRESS || '127.0.0.1',
         statusPageUrl: `http://localhost:${process.env.PORT || 3000}/`,
@@ -26,7 +26,7 @@ export default registerAs('eureka', () => ({
             '$': parseInt(process.env.PORT || '3000', 10),
             '@enabled': true,
         },
-        vipAddress: process.env.APP_NAME || 'lmsconnector',
+        vipAddress: process.env.APP_NAME || 'LMS-CONNECTOR',
         dataCenterInfo: {
             '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
             name: 'MyOwn',

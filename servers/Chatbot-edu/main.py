@@ -51,7 +51,7 @@ async def lifespan(app: FastAPI):
     
     # NEW: Register with Eureka
     register_with_eureka(
-        app_name="chatbot-edu-service",
+        app_name="CHATBOT-EDU-SERVICE",
         port=settings.service_port,
         eureka_server=settings.eureka_server_url
     )

@@ -15,7 +15,6 @@ import radim.ma.repositories.RefreshTokenRepository;
 import radim.ma.repositories.UserRepository;
 import radim.ma.security.JwtUtil;
 import radim.ma.service.EmailService;
-import radim.ma.messaging.EventPublisher;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -23,9 +22,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.security.core.GrantedAuthority;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
         private final UserRepository userRepository;
@@ -36,7 +37,6 @@ public class AuthService {
         private final EmailService emailService;
         private final radim.ma.service.OTPService otpService;
         private final CreditService creditService;
-        private final EventPublisher eventPublisher;
 
         public AuthResponse register(RegisterRequest request) {
                 if (userRepository.existsByEmail(request.getEmail())) {
@@ -62,11 +62,18 @@ public class AuthService {
                 // Initialize credit account with initial balance (10 credits)
                 creditService.initializeCreditAccount(savedUser.getId());
 
-                // 🚀 Publish user.created event to RabbitMQ (async - no waiting!)
-                eventPublisher.publishUserCreated(savedUser, otpCode);
-
-                // Note: Email sending is now handled by Email Service consumer
-                // This makes registration 10x faster!
+                // Send verification email directly (no RabbitMQ dependency)
+                try {
+                        emailService.sendVerificationEmail(
+                                        savedUser.getEmail(),
+                                        savedUser.getFirstName(),
+                                        otpCode);
+                        log.info("✅ Verification email sent successfully to: {}", savedUser.getEmail());
+                } catch (Exception e) {
+                        log.error("❌ Failed to send verification email to: {}. Error: {}",
+                                        savedUser.getEmail(), e.getMessage());
+                        // Don't fail registration if email fails
+                }
 
                 Map<String, Object> extraClaims = new HashMap<>();
                 extraClaims.put("userId", savedUser.getId());

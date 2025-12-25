@@ -1,7 +1,9 @@
-import { Controller, Param, ParseIntPipe, Post, Get, Logger } from '@nestjs/common';
+import { Controller, UseGuards, Param, ParseIntPipe, Post, Get, Logger } from '@nestjs/common';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { IngestionService } from './ingestion.service';
 
 @Controller('ingestion')
+@UseGuards(JwtAuthGuard)  // Protect all endpoints with JWT authentication
 export class IngestionController {
     private readonly logger = new Logger(IngestionController.name);
 
@@ -24,9 +26,10 @@ export class IngestionController {
     }
 
     /**
-     * Health check endpoint
+     * Health check endpoint (PUBLIC - no JWT required)
      */
     @Get('health')
+    @UseGuards()  // Override controller guard to make this endpoint public
     async healthCheck() {
         return { status: 'ok', service: 'ingestion' };
     }

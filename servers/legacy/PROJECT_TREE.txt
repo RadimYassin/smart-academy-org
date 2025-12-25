@@ -1,0 +1,78 @@
+📁 EDUPATH-MS/
+│
+├── 📂 data/                                    # Données du projet
+│   ├── 📂 raw/                                 # Données brutes (non modifiées)
+│   │   ├── 📄 1- one_clean.csv                # Dataset année 1 (84,028 lignes)
+│   │   └── 📄 2- two_clean.csv                # Dataset année 2 (75,776 lignes)
+│   │
+│   └── 📂 processed/                           # Données traitées par le pipeline
+│       ├── 📄 data_cleaned.csv                # Données avec Total recalculé, Subject encodé, is_fail créé
+│       └── 📄 student_profiles.csv            # Profils d'étudiants avec clusters K-Means
+│
+├── 📂 src/                                     # Code source du pipeline
+│   ├── 📄 __init__.py                         # Marqueur de package Python
+│   ├── 📄 config.py                           # ⚙️ Configuration centralisée (tous les chemins)
+│   ├── 📄 pipeline.py                         # 🎯 3 Composants principaux
+│   │                                          #    - PrepaData (nettoyage)
+│   │                                          #    - StudentProfiler (clustering)
+│   │                                          #    - PathPredictor (XGBoost)
+│   └── 📄 examples.py                         # Exemples d'utilisation des composants
+│
+├── 📂 outputs/                                 # Résultats générés par le pipeline
+│   ├── 📂 figures/                            # Visualisations (PNG)
+│   │   ├── 🖼️ elbow_method.png               # Méthode du coude pour K optimal
+│   │   ├── 🖼️ student_clusters.png           # Visualisation PCA des 4 clusters
+│   │   ├── 🖼️ confusion_matrix.png           # Performance du modèle XGBoost
+│   │   └── 🖼️ feature_importance.png         # Facteurs d'échec (matières, notes, etc.)
+│   │
+│   └── 📂 models/                             # Modèles ML sauvegardés
+│       └── 📦 xgboost_model.pkl              # Modèle XGBoost sérialisé (réutilisable)
+│
+├── 📂 docs/                                    # Documentation du projet
+│   ├── 📄 STRUCTURE.md                        # Description de la structure du projet
+│   └── 📄 RESTRUCTURATION.md                  # Guide de restructuration (avant/après)
+│
+├── 📄 run_pipeline.py                          # 🚀 POINT D'ENTRÉE PRINCIPAL
+├── 📄 edupath_pipeline.py                      # Script original (legacy, pour référence)
+├── 📄 examples.py                              # Copie legacy des exemples
+├── 📄 requirements.txt                         # Dépendances Python
+├── 📄 .gitignore                               # Fichiers à ignorer dans Git
+└── 📄 README.md                                # Guide d'utilisation complet
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 FICHIERS CLÉS:
+
+1. run_pipeline.py           → Lance le pipeline complet
+2. src/config.py             → Configuration centralisée (chemins, paramètres)
+3. src/pipeline.py           → Les 3 composants (PrepaData, StudentProfiler, PathPredictor)
+4. README.md                 → Guide d'utilisation
+5. docs/STRUCTURE.md         → Documentation de la structure
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🚀 UTILISATION:
+
+# Exécuter le pipeline complet
+cd c:\Users\PC\Desktop\anti
+python run_pipeline.py
+
+# Utiliser un composant individuellement
+python src/examples.py
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📊 RÉSULTATS GÉNÉRÉS:
+
+data/processed/data_cleaned.csv          → Données nettoyées (~160k lignes)
+data/processed/student_profiles.csv      → Profils + clusters de chaque étudiant
+outputs/figures/*.png                    → 4 visualisations (coude, clusters, matrice, importance)
+outputs/models/xgboost_model.pkl         → Modèle prédictif sauvegardé
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ Structure professionnelle suivant les meilleures pratiques DS/ML
+✅ Code modulaire et réutilisable
+✅ Configuration centralisée
+✅ Documentation complète
+✅ Prêt pour Git et collaboration

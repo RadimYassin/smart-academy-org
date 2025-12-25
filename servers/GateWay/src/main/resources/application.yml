@@ -14,7 +14,7 @@ spring:
       routes:
         # User Management Service Routes
         - id: user-management-service
-          uri: http://localhost:8082
+          uri: lb://USER-MANAGEMENT-SERVICE
           predicates:
             - Path=/user-management-service/**
           filters:
@@ -22,7 +22,7 @@ spring:
         
         # Course Management Service Routes  
         - id: course-service
-          uri: http://localhost:8081
+          uri: lb://COURSE-SERVICE
           predicates:
             - Path=/course-service/**
           filters:
@@ -30,7 +30,7 @@ spring:
             
         # LMS Connector Service Routes
         - id: lms-connector
-          uri: http://localhost:3000
+          uri: lb://LMS-CONNECTOR
           predicates:
             - Path=/lmsconnector/**
           filters:
@@ -38,41 +38,17 @@ spring:
             
         # Chatbot-edu Service Routes
         - id: chatbot-edu-service
-          uri: http://localhost:8005
+          uri: lb://CHATBOT-EDU-SERVICE
           predicates:
             - Path=/chatbot-edu-service/**
           filters:
             - StripPrefix=1
         
-        # PrepaData AI Service Routes
-        - id: prepadata-service
-          uri: lb://PREPADATA-SERVICE
+        # AI Services (Consolidated FastAPI Service)
+        - id: ai-services
+          uri: lb://AI-SERVICES-API
           predicates:
-            - Path=/prepadata-service/**
-          filters:
-            - StripPrefix=1
-        
-        # StudentProfiler AI Service Routes
-        - id: studentprofiler-service
-          uri: lb://STUDENTPROFILER-SERVICE
-          predicates:
-            - Path=/studentprofiler-service/**
-          filters:
-            - StripPrefix=1
-        
-        # PathPredictor AI Service Routes
-        - id: pathpredictor-service
-          uri: lb://PATHPREDICTOR-SERVICE
-          predicates:
-            - Path=/pathpredictor-service/**
-          filters:
-            - StripPrefix=1
-        
-        # RecoBuilder AI Service Routes
-        - id: recobuilder-service
-          uri: lb://RECOBUILDER-SERVICE
-          predicates:
-            - Path=/recobuilder-service/**
+            - Path=/ai/**
           filters:
             - StripPrefix=1
       

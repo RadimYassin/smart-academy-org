@@ -8,7 +8,7 @@ import os
 logger = logging.getLogger(__name__)
 
 def register_with_eureka(
-    app_name: str = "chatbot-edu-service",
+    app_name: str = "CHATBOT-EDU-SERVICE",
     port: int = 8005,
     eureka_server: str = "http://localhost:8761/eureka"
 ):

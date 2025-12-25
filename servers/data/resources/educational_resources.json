@@ -1,0 +1,268 @@
+{
+  "resources": [
+    {
+      "resource_id": "vid_math_001",
+      "title": "Algèbre Linéaire - Les Bases",
+      "subject": "Mathématiques",
+      "type": "video",
+      "difficulty": "facile",
+      "description": "Introduction aux matrices, déterminants et systèmes d'équations linéaires. Parfait pour débuter.",
+      "url": "https://www.youtube.com/watch?v=example_math_basics",
+      "duration_min": 45,
+      "tags": ["algèbre", "matrices", "débutant"]
+    },
+    {
+      "resource_id": "vid_math_002",
+      "title": "Calcul Différentiel et Intégral",
+      "subject": "Mathématiques",
+      "type": "video",
+      "difficulty": "moyen",
+      "description": "Cours complet sur les dérivées, intégrales et applications pratiques.",
+      "url": "https://www.youtube.com/watch?v=example_calculus",
+      "duration_min": 120,
+      "tags": ["calcul", "dérivées", "intégrales"]
+    },
+    {
+      "resource_id": "ex_math_001",
+      "title": "100 Exercices d'Algèbre Corrigés",
+      "subject": "Mathématiques", 
+      "type": "exercice",
+      "difficulty": "moyen",
+      "description": "Série d'exercices progressifs avec solutions détaillées pour maîtriser l'algèbre.",
+      "url": "https://example.com/exercices/algebre",
+      "estimated_hours": 10,
+      "tags": ["exercices", "algèbre", "corrigés"]
+    },
+    {
+      "resource_id": "vid_phys_001",
+      "title": "Mécanique Classique - Newton",
+      "subject": "Physique",
+      "type": "video",
+      "difficulty": "facile",
+      "description": "Les trois lois de Newton expliquées avec des exemples concrets et animations.",
+      "url": "https://www.youtube.com/watch?v=example_newton",
+      "duration_min": 60,
+      "tags": ["mécanique", "newton", "forces"]
+    },
+    {
+      "resource_id": "vid_phys_002",
+      "title": "Électromagnétisme Avancé",
+      "subject": "Physique",
+      "type": "video",
+      "difficulty": "difficile",
+      "description": "Équations de Maxwell, ondes électromagnétiques et applications.",
+      "url": "https://www.youtube.com/watch?v=example_electromag",
+      "duration_min": 180,
+      "tags": ["électromagnétisme", "maxwell", "avancé"]
+    },
+    {
+      "resource_id": "ex_phys_001",
+      "title": "Problèmes de Mécanique Résolus",
+      "subject": "Physique",
+      "type": "exercice",
+      "difficulty": "moyen",
+      "description": "50 problèmes classiques de mécanique avec solutions pas à pas.",
+      "url": "https://example.com/exercices/mecanique",
+      "estimated_hours": 8,
+      "tags": ["mécanique", "problèmes", "solutions"]
+    },
+    {
+      "resource_id": "vid_chem_001",
+      "title": "Chimie Organique - Introduction",
+      "subject": "Chimie",
+      "type": "video",
+      "difficulty": "facile",
+      "description": "Bases de la chimie organique: nomenclature, fonctions et réactions simples.",
+      "url": "https://www.youtube.com/watch?v=example_orga",
+      "duration_min": 90,
+      "tags": ["chimie organique", "nomenclature", "débutant"]
+    },
+    {
+      "resource_id": "vid_chem_002",
+      "title": "Thermodynamique Chimique",
+      "subject": "Chimie",
+      "type": "video",
+      "difficulty": "moyen",
+      "description": "Enthalpie, entropie, énergie libre et équilibres chimiques.",
+      "url": "https://www.youtube.com/watch?v=example_thermo",
+      "duration_min": 100,
+      "tags": ["thermodynamique", "équilibres"]
+    },
+    {
+      "resource_id": "ex_chem_001",
+      "title": "TP Virtuels de Chimie",
+      "subject": "Chimie",
+      "type": "exercice",
+      "difficulty": "facile",
+      "description": "Simulations interactives de TP de chimie pour pratiquer sans danger.",
+      "url": "https://example.com/tp-chimie",
+      "estimated_hours": 5,
+      "tags": ["TP", "simulations", "pratique"]
+    },
+    {
+      "resource_id": "vid_prog_001",
+      "title": "Python pour Débutants",
+      "subject": "Programmation",
+      "type": "video",
+      "difficulty": "facile",
+      "description": "Cours complet Python: syntaxe, structures de données, programmation orientée objet.",
+      "url": "https://www.youtube.com/watch?v=example_python",
+      "duration_min": 240,
+      "tags": ["python", "débutant", "programmation"]
+    },
+    {
+      "resource_id": "vid_prog_002",
+      "title": "Structures de Données et Algorithmes",
+      "subject": "Programmation",
+      "type": "video",
+      "difficulty": "moyen",
+      "description": "Listes, arbres, graphes et algorithmes de recherche/tri.",
+      "url": "https://www.youtube.com/watch?v=example_algo",
+      "duration_min": 150,
+      "tags": ["algorithmes", "structures", "complexité"]
+    },
+    {
+      "resource_id": "ex_prog_001",
+      "title": "Challenges de Programmation",
+      "subject": "Programmation",
+      "type": "exercice",
+      "difficulty": "moyen",
+      "description": "100+ défis de code progressifs pour améliorer vos compétences.",
+      "url": "https://leetcode.com",
+      "estimated_hours": 20,
+      "tags": ["challenges", "coding", "pratique"]
+    },
+    {
+      "resource_id": "vid_elec_001",
+      "title": "Circuits Électriques de Base",
+      "subject": "Électronique",
+      "type": "video",
+      "difficulty": "facile",
+      "description": "Lois d'Ohm, Kirchhoff et analyse de circuits simples.",
+      "url": "https://www.youtube.com/watch?v=example_circuits",
+      "duration_min": 75,
+      "tags": ["circuits", "ohm", "kirchhoff"]
+    },
+    {
+      "resource_id": "vid_elec_002",
+      "title": "Électronique Numérique",
+      "subject": "Électronique",
+      "type": "video",
+      "difficulty": "moyen",
+      "description": "Portes logiques, bascules, compteurs et circuits séquentiels.",
+      "url": "https://www.youtube.com/watch?v=example_digital",
+      "duration_min": 120,
+      "tags": ["numérique", "portes logiques", "séquentiel"]
+    },
+    {
+      "resource_id": "ex_elec_001",
+      "title": "Simulations de Circuits",
+      "subject": "Électronique",
+      "type": "exercice",
+      "difficulty": "facile",
+      "description": "Logiciel de simulation pour concevoir et tester vos circuits.",
+      "url": "https://www.circuitlab.com",
+      "estimated_hours": 6,
+      "tags": ["simulation", "pratique", "circuits"]
+    },
+    {
+      "resource_id": "tut_general_001",
+      "title": "Tutorat en Mathématiques",
+      "subject": "Mathématiques",
+      "type": "tutorat",
+      "difficulty": "tous_niveaux",
+      "description": "Séances de tutorat personnalisé avec un professeur certifié. Sessions de 1h, disponible en ligne ou sur campus.",
+      "url": "mailto:tutorat@university.edu",
+      "sessions_per_week": 2,
+      "tags": ["tutorat", "personnalisé", "aide"]
+    },
+    {
+      "resource_id": "tut_general_002",
+      "title": "Tutorat en Physique",
+      "subject": "Physique",
+      "type": "tutorat",
+      "difficulty": "tous_niveaux",
+      "description": "Accompagnement individuel pour surmonter vos difficultés en physique.",
+      "url": "mailto:tutorat@university.edu",
+      "sessions_per_week": 2,
+      "tags": ["tutorat", "physique", "aide"]
+    },
+    {
+      "resource_id": "tut_general_003",
+      "title": "Tutorat en Programmation",
+      "subject": "Programmation",
+      "type": "tutorat",
+      "difficulty": "tous_niveaux",
+      "description": "Support individuel pour la programmation: debugging, projets, concepts.",
+      "url": "mailto:tutorat@university.edu",
+      "sessions_per_week": 2,
+      "tags": ["tutorat", "code", "projets"]
+    },
+    {
+      "resource_id": "cours_math_001",
+      "title": "Support de Cours - Algèbre Moderne",
+      "subject": "Mathématiques",
+      "type": "cours",
+      "difficulty": "moyen",
+      "description": "PDF complet du cours d'algèbre avec théorèmes, démonstrations et exemples.",
+      "url": "https://example.com/cours/algebre.pdf",
+      "pages": 150,
+      "tags": ["cours", "algèbre", "pdf"]
+    },
+    {
+      "resource_id": "cours_phys_001",
+      "title": "Manuel de Physique Générale",
+      "subject": "Physique",
+      "type": "cours",
+      "difficulty": "moyen",
+      "description": "Manuel complet couvrant mécanique, thermodynamique et électromagnétisme.",
+      "url": "https://example.com/cours/physique.pdf",
+      "pages": 320,
+      "tags": ["manuel", "physique", "complet"]
+    },
+    {
+      "resource_id": "vid_method_001",
+      "title": "Techniques de Mémorisation",
+      "subject": "Méthodologie",
+      "type": "video",
+      "difficulty": "facile",
+      "description": "Méthodes efficaces pour mieux retenir: cartes mentales, répétition espacée, mnémotechniques.",
+      "url": "https://www.youtube.com/watch?v=example_memory",
+      "duration_min": 30,
+      "tags": ["mémorisation", "méthodes", "étude"]
+    },
+    {
+      "resource_id": "vid_method_002",
+      "title": "Gestion du Temps et Organisation",
+      "subject": "Méthodologie",
+      "type": "video",
+      "difficulty": "facile",
+      "description": "Planification efficace, priorisation des tâches, éviter la procrastination.",
+      "url": "https://www.youtube.com/watch?v=example_time",
+      "duration_min": 25,
+      "tags": ["organisation", "temps", "productivité"]
+    },
+    {
+      "resource_id": "vid_stress_001",
+      "title": "Gérer le Stress des Examens",
+      "subject": "Bien-être",
+      "type": "video",
+      "difficulty": "facile",
+      "description": "Techniques de relaxation, respiration et gestion du stress pour les périodes d'examens.",
+      "url": "https://www.youtube.com/watch?v=example_stress",
+      "duration_min": 20,
+      "tags": ["stress", "examens", "bien-être"]
+    },
+    {
+      "resource_id": "workshop_001",
+      "title": "Atelier de Remise à Niveau Intensif",
+      "subject": "Multi-matières",
+      "type": "workshop",
+      "difficulty": "tous_niveaux",
+      "description": "Session intensive de 3 jours pour consolider les bases avant les examens.",
+      "url": "https://example.com/workshop/intensive",
+      "duration_days": 3,
+      "tags": ["intensif", "révisions", "groupe"]
+    }
+  ]
+}
