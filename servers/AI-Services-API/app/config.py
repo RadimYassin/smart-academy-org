@@ -18,6 +18,9 @@ class Settings:
     # Eureka Configuration
     EUREKA_SERVER: str = os.getenv("EUREKA_SERVER", "http://localhost:8761/eureka")
     
+    # Gateway Configuration
+    GATEWAY_URL: str = os.getenv("GATEWAY_URL", "http://localhost:8888")
+    
     # Database Configuration
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
