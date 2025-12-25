@@ -40,6 +40,20 @@ jobs:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           cache: 'maven'
       
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: servers/lmsconnector/package-lock.json
+
+      - name: Build & Test LMSConnector
+        run: |
+          cd servers/lmsconnector
+          npm ci
+          npm run build
+          npm run test:cov
+      
       - name: Build User Management Service
         run: |
           cd servers/User-Management
@@ -76,6 +90,7 @@ jobs:
           name: build-artifacts
           path: |
             servers/*/target/*.jar
+            servers/lmsconnector/dist/
           retention-days: 7
       
       - name: Upload test results
@@ -86,6 +101,7 @@ jobs:
           path: |
             servers/User-Management/target/surefire-reports/
             servers/Cour-Management/target/surefire-reports/
+            servers/lmsconnector/test-results/
           retention-days: 30
       
       - name: Upload coverage reports
@@ -95,12 +111,18 @@ jobs:
           path: |
             servers/User-Management/target/site/jacoco/
             servers/Cour-Management/target/site/jacoco/
+            servers/lmsconnector/coverage/
           retention-days: 30
       
       - name: Display Test Summary
         if: always()
         run: |
           echo "## 📊 Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### LMSConnector Service" >> $GITHUB_STEP_SUMMARY
+          if [ -f servers/lmsconnector/coverage/lcov.info ]; then
+            echo "✅ Tests executed and coverage generated" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### User Management Service" >> $GITHUB_STEP_SUMMARY
           if [ -f servers/User-Management/target/surefire-reports/*.xml ]; then
@@ -144,6 +166,11 @@ jobs:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
+
+      - name: Download coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-reports
       
       - name: SonarCloud Scan - User Management
         env:
@@ -170,6 +197,23 @@ jobs:
             -Dsonar.organization=smart-academy-org \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.qualitygate.wait=false
+
+      - name: SonarCloud Scan - LMSConnector
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: servers/lmsconnector
+          args: >
+            -Dsonar.organization=smart-academy-org
+            -Dsonar.projectKey=smart-academy-lmsconnector
+            -Dsonar.projectName="LMSConnector"
+            -Dsonar.sources=src
+            -Dsonar.tests=src
+            -Dsonar.test.inclusions=**/*.spec.ts
+            -Dsonar.exclusions=**/*.spec.ts,node_modules/**,dist/**
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
   # ==========================================
   # Stage 3: SCA -   OWASP Dependency Check
@@ -253,6 +297,9 @@ jobs:
           - name: eureka-server
             context: ./servers/Eureka-Server
             image: smart-academy-eureka-server
+          - name: lmsconnector
+            context: ./servers/lmsconnector
+            image: smart-academy-lmsconnector
     
     steps:
       - name: Checkout source code
@@ -309,6 +356,8 @@ jobs:
             image: smart-academy-gateway
           - name: eureka-server
             image: smart-academy-eureka-server
+          - name: lmsconnector
+            image: smart-academy-lmsconnector
     
     steps:
       - name: Checkout source code
@@ -378,6 +427,8 @@ jobs:
             image: smart-academy-gateway
           - name: eureka-server
             image: smart-academy-eureka-server
+          - name: lmsconnector
+            image: smart-academy-lmsconnector
     
     steps:
       - name: Checkout source code
