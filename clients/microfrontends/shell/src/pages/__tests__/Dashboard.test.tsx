@@ -34,15 +34,19 @@ vi.mock('react-router-dom', async () => {
     };
 });
 
-vi.mock('../../contexts/AuthContext', () => ({
-    useAuth: () => ({
-        user: {
-            id: 1,
-            email: 'student@example.com',
-            role: 'STUDENT',
-        },
-    }),
-}));
+vi.mock('../../contexts/AuthContext', async () => {
+    const actual = await vi.importActual('../../contexts/AuthContext');
+    return {
+        ...actual,
+        useAuth: () => ({
+            user: {
+                id: 1,
+                email: 'student@example.com',
+                role: 'STUDENT',
+            },
+        }),
+    };
+});
 
 describe('Dashboard Page', () => {
     beforeEach(() => {

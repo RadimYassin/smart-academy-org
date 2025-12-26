@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '../test/utils';
+import { render, screen, fireEvent, waitFor } from '../../test/utils';
 import AuthPages from '../AuthPages';
 import { authApi } from '../../api';
 
