@@ -71,7 +71,7 @@ describe('Dashboard Page', () => {
                 studentId: 1,
                 assignedBy: 1,
                 assignmentType: 'INDIVIDUAL' as const,
-                enrolledAt: '2024-01-01'
+                enrolledAt: '2024-01-01T00:00:00Z'
             },
         ];
 
