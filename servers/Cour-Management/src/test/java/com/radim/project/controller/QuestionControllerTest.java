@@ -23,7 +23,18 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(QuestionController.class)
+import com.radim.project.config.TestSecurityConfig;
+import com.radim.project.security.JwtAuthenticationFilter;
+import com.radim.project.security.SecurityConfig;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+
+@WebMvcTest(controllers = QuestionController.class, excludeFilters = {
+                @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class),
+                @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtAuthenticationFilter.class)
+})
+@Import(TestSecurityConfig.class)
 class QuestionControllerTest {
 
         @Autowired
@@ -49,6 +60,9 @@ class QuestionControllerTest {
                 questionRequest.setQuestionText("What is Spring Boot?");
                 questionRequest.setQuestionType("MULTIPLE_CHOICE");
                 questionRequest.setPoints(10);
+                questionRequest.setOptions(Arrays.asList(
+                                new QuizDto.OptionRequest("Option 1", true),
+                                new QuizDto.OptionRequest("Option 2", false)));
 
                 questionResponse = new QuizDto.QuestionResponse();
                 questionResponse.setId(questionId);
