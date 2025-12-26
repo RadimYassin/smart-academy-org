@@ -65,15 +65,27 @@ describe('Dashboard Page', () => {
 
     it('fetches student courses on FETCH_MY_COURSES message', async () => {
         const mockEnrollments = [
-            { id: 1, courseId: 1, studentId: 1, enrolledAt: '2024-01-01' },
+            {
+                id: '1',
+                courseId: '1',
+                studentId: 1,
+                assignedBy: 1,
+                assignmentType: 'INDIVIDUAL' as const,
+                enrolledAt: '2024-01-01'
+            },
         ];
 
         const mockCourses = [
             {
-                id: 1,
+                id: '1',
                 title: 'React Basics',
                 description: 'Learn React',
+                category: 'Programming',
+                level: 'BEGINNER' as const,
+                thumbnailUrl: 'https://example.com/thumbnail.jpg',
                 teacherId: 1,
+                createdAt: '2024-01-01T00:00:00Z',
+                updatedAt: '2024-01-01T00:00:00Z',
             },
         ];
 
@@ -102,7 +114,7 @@ describe('Dashboard Page', () => {
 
         await waitFor(() => {
             expect(enrollmentApi.getMyCourses).toHaveBeenCalled();
-            expect(courseApi.getCourseById).toHaveBeenCalledWith(1);
+            expect(courseApi.getCourseById).toHaveBeenCalledWith('1');
         });
     });
 
