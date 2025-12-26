@@ -8,6 +8,13 @@ vi.mock('../../api', () => ({
     authApi: {
         login: vi.fn(),
         register: vi.fn(),
+        logout: vi.fn(),
+    },
+    tokenManager: {
+        getAccessToken: vi.fn(() => null),
+        getRefreshToken: vi.fn(() => null),
+        setTokens: vi.fn(),
+        clearTokens: vi.fn(),
     },
     handleApiError: vi.fn((err) => err.message || 'An error occurred'),
 }));
