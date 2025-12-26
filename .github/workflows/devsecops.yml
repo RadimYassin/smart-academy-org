@@ -59,7 +59,9 @@ jobs:
           cd servers/AI-Services-API
           pip install -r requirements.txt
           pip install -r requirements-test.txt
-          python -m pytest --cov=app --cov=../../src --cov-report=xml:coverage.xml --junitxml=test-results.xml
+          coverage run -m pytest --junitxml=test-results.xml
+          coverage xml
+          coverage report
 
       - name: Build & Test LMSConnector
         run: |
@@ -73,7 +75,9 @@ jobs:
           cd servers/Chatbot-edu
           pip install -r requirements.txt
           pip install -r requirements-test.txt
-          python -m pytest --cov=app --cov=services --cov=routers --cov=core --cov-report=xml:coverage.xml --junitxml=test-results.xml
+          coverage run -m pytest --junitxml=test-results.xml
+          coverage xml
+          coverage report
       
       - name: Build User Management Service
         run: |

@@ -1,0 +1,19 @@
+[run]
+source = app
+omit =
+    */tests/*
+    */test_*
+    */__pycache__/*
+    */venv/*
+    */.venv/*
+
+[report]
+precision = 2
+show_missing = True
+skip_covered = False
+
+[xml]
+output = coverage.xml
+
+[html]
+directory = htmlcov

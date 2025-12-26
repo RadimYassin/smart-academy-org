@@ -1,0 +1,22 @@
+[run]
+source = app,services,routers,auth,core
+omit =
+    */tests/*
+    */test_*
+    */__pycache__/*
+    */venv/*
+    */.venv/*
+    */Cours/*
+    */temp_pdfs/*
+    */faiss_index/*
+
+[report]
+precision = 2
+show_missing = True
+skip_covered = False
+
+[xml]
+output = coverage.xml
+
+[html]
+directory = htmlcov
